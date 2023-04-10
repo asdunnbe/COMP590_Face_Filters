@@ -2,31 +2,62 @@ import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk
 
-root = tk.Tk() # root is the main window
+# root is the main window
+root = tk.Tk()
 root.title('Title')
-# root["bg"] = '#FFF4E0'
 root.config(background='#FFF4E0')
 
-col1 = '#FFF4E0'
-col2 = '#FFBF9B'
-col3 = '#B46060'
-col4 = '#4D4D4D'
+COL1 = '#FFF4E0'
+COL2 = '#FFBF9B'
+COL3 = '#B46060'
+COL4 = '#4D4D4D'
+SCALE_LENGTH = 200
 
-# create image
-imgRaw = Image.open('./cam.png')
-phimg = ImageTk.PhotoImage(imgRaw)
-imgLbl = tk.Label(root, image=phimg, background=col1)
+imgHeight = 300
+imgWidth = 300
 
 # styling
 s = ttk.Style()
 s.theme_use('default')
-s.configure('TLabel', background=col1, foreground=col4, padding=3)
-s.configure('TFrame', background=col1)
-s.configure('TNotebook', background=col2, borderwidth=0, padding=2)
-s.configure('TNotebook.Tab', background=col2, foreground=col4, 
+s.configure('TLabel', background=COL1, foreground=COL4, padding=3)
+s.configure('TFrame', background=COL1)
+s.configure('TNotebook', background=COL2, borderwidth=0, padding=2)
+s.configure('TNotebook.Tab', background=COL2, foreground=COL4, 
             borderwidth=0, padding=3)
-s.map('TNotebook.Tab', background=[('selected',col1), ('focus',col1)], 
-      foreground=[('selected',col4)])
+s.map('TNotebook.Tab', background=[('selected',COL1), ('focus',COL1)], 
+      foreground=[('selected',COL4)])
+
+
+# create image
+imgCvs = tk.Canvas(root, height=imgHeight, width=imgWidth,
+                   background=COL1, highlightbackground=COL2)
+
+fW = 2/3 * imgWidth # face width
+fH = 1.2*fW # face height
+face = imgCvs.create_oval((imgWidth - fW)/2, (imgHeight - fH)/2,
+                          (imgWidth + fW)/2, (imgHeight + fH)/2,
+                          outline=COL4)
+
+mW = 0.4*fW # mouth width
+mH = 0.25*fH # mouthx2 height
+mouth = imgCvs.create_arc((imgWidth - mW)/2, (imgHeight + fH/2 - mH)/2,
+                          (imgWidth + mW)/2, (imgHeight + fH/2 + mH)/2,
+                          outline=COL3, fill=COL3, extent=-180)
+
+eS = int(.32*fW) #eye size (square)
+
+leyeRaw = Image.open('leye.png')
+leyeSized = leyeRaw.resize((eS,eS))
+leyeImg = ImageTk.PhotoImage(leyeSized)
+leye = imgCvs.create_image((imgWidth - fW/2)/2, (imgHeight - fH/6)/2,
+                           anchor='center',image=leyeImg)
+
+reyeRaw = Image.open('reye.png')
+reyeSized = reyeRaw.resize((eS,eS))
+reyeImg = ImageTk.PhotoImage(reyeSized)
+reye = imgCvs.create_image((imgWidth + fW/2)/2, (imgHeight - fH/6)/2,
+                           anchor='center',image=reyeImg)
+
 
 # settings, tabs are mouth or eyes
 settingsTabs = ttk.Notebook(root)
@@ -37,12 +68,13 @@ eyesTabFrm = ttk.Frame(settingsTabs)
 # choose eye rotation angle
 eRotationFrm = ttk.Frame(eyesTabFrm)
 eRotLbl = ttk.Label(eRotationFrm, text='Rotation')
-eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=col3)
-eRotScl = tk.Scale(eRotationFrm, orient='horizontal', 
-                  background=col1,
-                  highlightbackground=col2, troughcolor=col3,
-                  length=200, from_=-180, to=180, showvalue=0)
-eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=col3)
+eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=COL3)
+eRotScl = tk.Scale(eRotationFrm, orient='horizontal',
+                  background=COL1,
+                  highlightbackground=COL2, troughcolor=COL3,
+                  length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
+                  resolution=10)
+eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=COL3)
 
 eRotLbl.grid(row=0, column=1, sticky='W')
 eRotMinLbl.grid(row=1, column=0)
@@ -52,12 +84,13 @@ eRotMaxLbl.grid(row=1, column=2)
 # choose eye resize
 eResizeFrm = ttk.Frame(eyesTabFrm)
 eResLbl = ttk.Label(eResizeFrm, text='Resize')
-eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=col3)
+eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=COL3)
 eResScl = tk.Scale(eResizeFrm, orient='horizontal',
-                  background=col1,
-                  highlightbackground=col2, troughcolor=col3,
-                  length=200, from_=100, to=500, showvalue=0)
-eResMaxLbl = ttk.Label(eResizeFrm, text='500%', foreground=col3)
+                  background=COL1,
+                  highlightbackground=COL2, troughcolor=COL3,
+                  length=SCALE_LENGTH, from_=1.0, to=5.0, showvalue=0,
+                  resolution=0.1) # command= to call function for each change
+eResMaxLbl = ttk.Label(eResizeFrm, text='500%', foreground=COL3)
 
 eResLbl.grid(row=0, column=1, sticky='W')
 eResMinLbl.grid(row=1, column=0)
@@ -76,12 +109,13 @@ mouthTabFrm = ttk.Frame(settingsTabs)
 # choose mouth rotation angle
 mRotationFrm = ttk.Frame(mouthTabFrm)
 mRotLbl = ttk.Label(mRotationFrm, text='Rotation')
-mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=col3)
+mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=COL3)
 mRotScl = tk.Scale(mRotationFrm, orient='horizontal', 
-                  background=col1,
-                  highlightbackground=col2, troughcolor=col3,
-                  length=200, from_=-180, to=180, showvalue=0)
-mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=col3)
+                  background=COL1,
+                  highlightbackground=COL2, troughcolor=COL3,
+                  length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
+                  resolution=180)
+mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=COL3)
 
 mRotLbl.grid(row=0, column=1, sticky='W')
 mRotMinLbl.grid(row=1, column=0)
@@ -91,12 +125,13 @@ mRotMaxLbl.grid(row=1, column=2)
 # choose mouth resize
 mResizeFrm = ttk.Frame(mouthTabFrm)
 mResLbl = ttk.Label(mResizeFrm, text='Resize')
-mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=col3)
+mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=COL3)
 mResScl = tk.Scale(mResizeFrm, orient='horizontal',
-                  background=col1,
-                  highlightbackground=col2, troughcolor=col3,
-                  length=200, from_=100, to=500, showvalue=0)
-mResMaxLbl = ttk.Label(mResizeFrm, text='500%', foreground=col3)
+                  background=COL1,
+                  highlightbackground=COL2, troughcolor=COL3,
+                  length=SCALE_LENGTH, from_=1.0, to=5.0, showvalue=0,
+                  resolution=0.1)
+mResMaxLbl = ttk.Label(mResizeFrm, text='500%', foreground=COL3)
 
 mResLbl.grid(row=0, column=1, sticky='W')
 mResMinLbl.grid(row=1, column=0)
@@ -110,27 +145,18 @@ settingsTabs.add(mouthTabFrm, text='mouth')
 
 # submit Button
 submitBtn = tk.Label(root, text='submit', 
-                     background=col3, foreground=col1,
+                     background=COL3, foreground=COL1,
                      borderwidth=3, relief='flat',
                      padx=5, pady=5)
 submitBtn.bind('<Button-1>', lambda e:print('button clicked'))
 
 # place img and settings
-imgLbl.grid(row=0, column=0, rowspan=2, 
-            sticky='NW', padx=3, pady=3)
+imgCvs.grid(row=0, column=0, rowspan=2, 
+            sticky='NW', padx=10, pady=10)
 settingsTabs.grid(row=0, column=3, columnspan=3, 
-                  sticky='N', padx=5, pady=5)
+                  sticky='N', padx=5, pady=10)
 submitBtn.grid(row=1, column=4, 
                sticky='N', padx=3, pady=3)
 
 
 root.mainloop()
-
-
-# Label parameters
-# foreground:   color to draw the text in
-# background:   background color of the widget
-# padx, pady:   extra padding along the inside border of the widget
-# borderwidth:  width of the border around widget
-# relief:       border style: flat, raised, sunken, solid, ridge, groove
-
