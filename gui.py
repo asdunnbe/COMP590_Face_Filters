@@ -13,8 +13,8 @@ COL3 = '#B46060'
 COL4 = '#4D4D4D'
 SCALE_LENGTH = 200
 
-imgHeight = 300
-imgWidth = 300
+imgHeight = 200
+imgWidth = 200
 
 # styling
 s = ttk.Style()
@@ -42,6 +42,7 @@ mW = int(0.4*fW) # mouth width = 80
 mH = int(0.15*fH) # mouthx2 height
 mouthRaw = Image.open('mouth.png')
 mouthSized = mouthRaw.resize((mW,mH))
+mouthRotated = mouthSized
 mouthImg = ImageTk.PhotoImage(mouthSized)
 mouth = imgCvs.create_image(imgWidth/2, (imgHeight+fH/2)/2,
                             anchor='center', image=mouthImg)
@@ -50,12 +51,14 @@ eS = int(.3*fW) # eye size (square) = 64
 
 leyeRaw = Image.open('leye.png')
 leyeSized = leyeRaw.resize((eS,eS))
+leyeRotated = leyeSized
 leyeImg = ImageTk.PhotoImage(leyeSized)
 leye = imgCvs.create_image((imgWidth - fW/2)/2, (imgHeight - fH/6)/2,
                            anchor='center',image=leyeImg)
 
 reyeRaw = Image.open('reye.png')
 reyeSized = reyeRaw.resize((eS,eS))
+reyeRotated = reyeSized
 reyeImg = ImageTk.PhotoImage(reyeSized)
 reye = imgCvs.create_image((imgWidth + fW/2)/2, (imgHeight - fH/6)/2,
                            anchor='center',image=reyeImg)
@@ -68,6 +71,19 @@ settingsTabs = ttk.Notebook(root)
 eyesTabFrm = ttk.Frame(settingsTabs)
 
 # choose eye rotation angle
+def eyeRotate(val):
+      angle = int(val)
+      global leyeImg
+      global leyeRotated
+      leyeRotated = leyeSized.rotate(angle)
+      leyeImg = ImageTk.PhotoImage(leyeRotated)
+      imgCvs.itemconfig(leye, image=leyeImg)
+      global reyeImg
+      global reyeRotated
+      reyeRotated = reyeSized.rotate(-1* angle)
+      reyeImg = ImageTk.PhotoImage(reyeRotated)
+      imgCvs.itemconfig(reye, image=reyeImg)
+
 eRotationFrm = ttk.Frame(eyesTabFrm)
 eRotLbl = ttk.Label(eRotationFrm, text='Rotation')
 eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=COL3)
@@ -75,7 +91,7 @@ eRotScl = tk.Scale(eRotationFrm, orient='horizontal',
                   background=COL1,
                   highlightbackground=COL2, troughcolor=COL3,
                   length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
-                  resolution=10)
+                  resolution=10, command=eyeRotate)
 eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=COL3)
 
 eRotLbl.grid(row=0, column=1, sticky='W')
@@ -87,15 +103,18 @@ eRotMaxLbl.grid(row=1, column=2)
 def eyeResize(val):
       nEyeSize = int( float(val) * eS )
       global leyeImg
+      global leyeSized
       leyeSized = leyeRaw.resize((nEyeSize, nEyeSize))
-      leyeImg = ImageTk.PhotoImage(leyeSized)
+      leyeResized = leyeRotated.resize((nEyeSize, nEyeSize))
+      leyeImg = ImageTk.PhotoImage(leyeResized)
       imgCvs.itemconfig(leye, image=leyeImg)
       global reyeImg
+      global reyeSized
       reyeSized = reyeRaw.resize((nEyeSize, nEyeSize))
-      reyeImg = ImageTk.PhotoImage(reyeSized)
+      reyeResized = reyeRotated.resize((nEyeSize, nEyeSize))
+      reyeImg = ImageTk.PhotoImage(reyeResized)
       imgCvs.itemconfig(reye, image=reyeImg)
       # print(f'{eS} * {val} = {nEyeSize}')
-
 
 eResizeFrm = ttk.Frame(eyesTabFrm)
 eResLbl = ttk.Label(eResizeFrm, text='Resize')
@@ -122,6 +141,14 @@ settingsTabs.add(eyesTabFrm, text='eyes')
 mouthTabFrm = ttk.Frame(settingsTabs)
 
 # choose mouth rotation angle
+def mouthRotate(val):
+      angle = int(val)
+      global mouthImg
+      global mouthRotated
+      mouthRotated = mouthSized.rotate(angle)
+      mouthImg = ImageTk.PhotoImage(mouthRotated)
+      imgCvs.itemconfig(mouth, image=mouthImg)
+
 mRotationFrm = ttk.Frame(mouthTabFrm)
 mRotLbl = ttk.Label(mRotationFrm, text='Rotation')
 mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=COL3)
@@ -129,7 +156,7 @@ mRotScl = tk.Scale(mRotationFrm, orient='horizontal',
                   background=COL1,
                   highlightbackground=COL2, troughcolor=COL3,
                   length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
-                  resolution=180)
+                  resolution=180, command=mouthRotate)
 mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=COL3)
 
 mRotLbl.grid(row=0, column=1, sticky='W')
@@ -142,8 +169,10 @@ def mouthResize(val):
       nMouthW = int( float(val) * mW )
       nMouthH = int( float(val) * mH )
       global mouthImg
+      global mouthSized
       mouthSized = mouthRaw.resize((nMouthW, nMouthH))
-      mouthImg = ImageTk.PhotoImage(mouthSized)
+      mouthResized = mouthRotated.resize((nMouthW, nMouthH))
+      mouthImg = ImageTk.PhotoImage(mouthResized)
       imgCvs.itemconfig(mouth, image=mouthImg)
 
 mResizeFrm = ttk.Frame(mouthTabFrm)
