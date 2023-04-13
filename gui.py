@@ -32,19 +32,21 @@ s.map('TNotebook.Tab', background=[('selected',COL1), ('focus',COL1)],
 imgCvs = tk.Canvas(root, height=imgHeight, width=imgWidth,
                    background=COL1, highlightbackground=COL2)
 
-fW = 2/3 * imgWidth # face width
+fW = 2/3 * imgWidth # face width = 200
 fH = 1.2*fW # face height
 face = imgCvs.create_oval((imgWidth - fW)/2, (imgHeight - fH)/2,
                           (imgWidth + fW)/2, (imgHeight + fH)/2,
                           outline=COL4)
 
-mW = 0.4*fW # mouth width
-mH = 0.25*fH # mouthx2 height
-mouth = imgCvs.create_arc((imgWidth - mW)/2, (imgHeight + fH/2 - mH)/2,
-                          (imgWidth + mW)/2, (imgHeight + fH/2 + mH)/2,
-                          outline=COL3, fill=COL3, extent=-180)
+mW = int(0.4*fW) # mouth width = 80
+mH = int(0.15*fH) # mouthx2 height
+mouthRaw = Image.open('mouth.png')
+mouthSized = mouthRaw.resize((mW,mH))
+mouthImg = ImageTk.PhotoImage(mouthSized)
+mouth = imgCvs.create_image(imgWidth/2, (imgHeight+fH/2)/2,
+                            anchor='center', image=mouthImg)
 
-eS = int(.32*fW) #eye size (square)
+eS = int(.3*fW) # eye size (square) = 64
 
 leyeRaw = Image.open('leye.png')
 leyeSized = leyeRaw.resize((eS,eS))
@@ -82,15 +84,28 @@ eRotScl.grid(row=1, column=1)
 eRotMaxLbl.grid(row=1, column=2)
 
 # choose eye resize
+def eyeResize(val):
+      nEyeSize = int( float(val) * eS )
+      global leyeImg
+      leyeSized = leyeRaw.resize((nEyeSize, nEyeSize))
+      leyeImg = ImageTk.PhotoImage(leyeSized)
+      imgCvs.itemconfig(leye, image=leyeImg)
+      global reyeImg
+      reyeSized = reyeRaw.resize((nEyeSize, nEyeSize))
+      reyeImg = ImageTk.PhotoImage(reyeSized)
+      imgCvs.itemconfig(reye, image=reyeImg)
+      # print(f'{eS} * {val} = {nEyeSize}')
+
+
 eResizeFrm = ttk.Frame(eyesTabFrm)
 eResLbl = ttk.Label(eResizeFrm, text='Resize')
 eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=COL3)
 eResScl = tk.Scale(eResizeFrm, orient='horizontal',
                   background=COL1,
                   highlightbackground=COL2, troughcolor=COL3,
-                  length=SCALE_LENGTH, from_=1.0, to=5.0, showvalue=0,
-                  resolution=0.1) # command= to call function for each change
-eResMaxLbl = ttk.Label(eResizeFrm, text='500%', foreground=COL3)
+                  length=SCALE_LENGTH, from_=1.0, to=2.0, showvalue=0,
+                  resolution=0.05, command=eyeResize)
+eResMaxLbl = ttk.Label(eResizeFrm, text='200%', foreground=COL3)
 
 eResLbl.grid(row=0, column=1, sticky='W')
 eResMinLbl.grid(row=1, column=0)
@@ -123,15 +138,23 @@ mRotScl.grid(row=1, column=1)
 mRotMaxLbl.grid(row=1, column=2)
 
 # choose mouth resize
+def mouthResize(val):
+      nMouthW = int( float(val) * mW )
+      nMouthH = int( float(val) * mH )
+      global mouthImg
+      mouthSized = mouthRaw.resize((nMouthW, nMouthH))
+      mouthImg = ImageTk.PhotoImage(mouthSized)
+      imgCvs.itemconfig(mouth, image=mouthImg)
+
 mResizeFrm = ttk.Frame(mouthTabFrm)
 mResLbl = ttk.Label(mResizeFrm, text='Resize')
 mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=COL3)
 mResScl = tk.Scale(mResizeFrm, orient='horizontal',
                   background=COL1,
                   highlightbackground=COL2, troughcolor=COL3,
-                  length=SCALE_LENGTH, from_=1.0, to=5.0, showvalue=0,
-                  resolution=0.1)
-mResMaxLbl = ttk.Label(mResizeFrm, text='500%', foreground=COL3)
+                  length=SCALE_LENGTH, from_=1.0, to=2.5, showvalue=0,
+                  resolution=0.05, command=mouthResize)
+mResMaxLbl = ttk.Label(mResizeFrm, text='250%', foreground=COL3)
 
 mResLbl.grid(row=0, column=1, sticky='W')
 mResMinLbl.grid(row=1, column=0)
@@ -144,11 +167,18 @@ mResizeFrm.pack(pady=10, padx=5)
 settingsTabs.add(mouthTabFrm, text='mouth')
 
 # submit Button
+def getSettings():
+    print(f'eye rotation: ', eRotScl.get())
+    print(f'eye resize: ', eResScl.get())
+    print(f'mouth rotation: ', mRotScl.get())
+    print(f'mouth resize: ', mResScl.get())
+    print('button clicked')
+
 submitBtn = tk.Label(root, text='submit', 
                      background=COL3, foreground=COL1,
                      borderwidth=3, relief='flat',
                      padx=5, pady=5)
-submitBtn.bind('<Button-1>', lambda e:print('button clicked'))
+submitBtn.bind('<Button-1>', lambda e:getSettings())
 
 # place img and settings
 imgCvs.grid(row=0, column=0, rowspan=2, 
@@ -157,6 +187,5 @@ settingsTabs.grid(row=0, column=3, columnspan=3,
                   sticky='N', padx=5, pady=10)
 submitBtn.grid(row=1, column=4, 
                sticky='N', padx=3, pady=3)
-
 
 root.mainloop()
