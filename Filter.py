@@ -14,6 +14,17 @@ class EyeData:
         self.eye_img = cropped_eye
 
 
+class MouthData:
+    ox = 0
+    oy = 0
+    mouth_img = []
+
+    def __init__(self, original_image_x, original_image_y, cropped_mouth) -> None:
+        self.ox = original_image_x
+        self.oy = original_image_y
+        self.mouth_img = cropped_mouth
+
+
 class Filter:
 
     def __init__(self, image_url) -> None:
@@ -27,6 +38,14 @@ class Filter:
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         faces = face_cascade.detectMultiScale(self.gray_img, 1.1, 4)
         return faces
+
+    
+    # eye feature related functions
+    def get_scaled_up_eyes(self, scale_factor = 1):
+        # grow our original image
+        # find eyes on larger image, this will give us larger eye matrices/crops
+        # pair these with center coords for regular size image to draw scaled up eyes.
+        ...
 
 
     def get_eyes(self, face):
@@ -44,7 +63,7 @@ class Filter:
         detected_eye_information = []
         for (ex,ey,ew,eh) in eyes:
             cropped_eye = roi_color[ey:(ey + eh), ex:(ex+ew)]
-            # coordinates in original image where eye is
+            # coordinates in original image where eye is (centered coord)
             ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
             data = EyeData(cropped_eye=cropped_eye, original_image_x=ox, original_image_y=oy)
             detected_eye_information.append(data)
@@ -105,4 +124,26 @@ class Filter:
                     eye.eye_img = rotated_eye
                     self.drawEye(eye)
         
-          
+    
+    # mouth feature related functions
+    def get_mouths(self, face):
+        """Finds all detectable eyes in a given face"""
+        mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        
+        (x,y,w,h) = face
+        roi_gray = self.gray_img[y:y+h, x:x+w]
+        roi_color = self.color_img[y:y+h, x:x+w]
+        
+        # detects mouths within the detected face area (roi)
+        mouths = mouth_cascade.detectMultiScale(roi_gray)
+
+        # draws a rectangle around each mouth (expected 1)
+        detected_mouth_information = []
+        for (ex,ey,ew,eh) in mouths:
+            cropped_mouth = roi_color[ey:(ey + eh), ex:(ex+ew)]
+            # coordinates in original image where mouth is (centered coord)
+            ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
+            data = EyeData(cropped_mouth=cropped_mouth, original_image_x=ox, original_image_y=oy)
+            detected_mouth_information.append(data)
+        
+        return detected_mouth_information
