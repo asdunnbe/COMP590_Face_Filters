@@ -40,7 +40,7 @@ face = imgCvs.create_oval((imgWidth - fW)/2, (imgHeight - fH)/2,
 
 mW = int(0.4*fW) # mouth width = 80
 mH = int(0.15*fH) # mouthx2 height
-mouthRaw = Image.open('mouth.png')
+mouthRaw = Image.open('assets/mouth.png')
 mouthSized = mouthRaw.resize((mW,mH))
 mouthRotated = mouthSized
 mouthImg = ImageTk.PhotoImage(mouthSized)
@@ -49,14 +49,14 @@ mouth = imgCvs.create_image(imgWidth/2, (imgHeight+fH/2)/2,
 
 eS = int(.3*fW) # eye size (square) = 64
 
-leyeRaw = Image.open('leye.png')
+leyeRaw = Image.open('assets/leye.png')
 leyeSized = leyeRaw.resize((eS,eS))
 leyeRotated = leyeSized
 leyeImg = ImageTk.PhotoImage(leyeSized)
 leye = imgCvs.create_image((imgWidth - fW/2)/2, (imgHeight - fH/6)/2,
                            anchor='center',image=leyeImg)
 
-reyeRaw = Image.open('reye.png')
+reyeRaw = Image.open('assets/reye.png')
 reyeSized = reyeRaw.resize((eS,eS))
 reyeRotated = reyeSized
 reyeImg = ImageTk.PhotoImage(reyeSized)
