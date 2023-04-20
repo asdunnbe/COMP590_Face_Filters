@@ -1,6 +1,7 @@
-from ast import List
 import cv2
 import numpy as np
+from imutils import face_utils
+# import dlib
 
 
 class EyeData:
@@ -27,10 +28,17 @@ class MouthData:
 
 class Filter:
 
-    def __init__(self, image_url) -> None:
-        self.color_img = cv2.imread(image_url)
-        self.gray_img = cv2.cvtColor(self.color_img, cv2.COLOR_BGR2GRAY)
-        self.modified_img = cv2.imread(image_url)
+    def __init__(self, image_url = None, use_url = True, input_image = None) -> None:
+        
+        if use_url:
+            self.color_img = cv2.imread(image_url)
+            self.gray_img = cv2.cvtColor(self.color_img, cv2.COLOR_BGR2GRAY)
+            self.modified_img = cv2.imread(image_url)
+        else:
+            self.color_img = input_image
+            self.gray_img = cv2.cvtColor(self.color_img, cv2.COLOR_BGR2GRAY)
+            self.modified_img = input_image
+
 
 
     def get_faces(self):
@@ -65,6 +73,7 @@ class Filter:
             cropped_eye = roi_color[ey:(ey + eh), ex:(ex+ew)]
             # coordinates in original image where eye is (centered coord)
             ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
+            # cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),2)
             data = EyeData(cropped_eye=cropped_eye, original_image_x=ox, original_image_y=oy)
             detected_eye_information.append(data)
         
@@ -126,7 +135,7 @@ class Filter:
         
     
     # mouth feature related functions
-    def get_mouths(self, face):
+    def get_mouths(self, face, draw = False):
         """Finds all detectable eyes in a given face"""
         mouth_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         
@@ -141,9 +150,42 @@ class Filter:
         detected_mouth_information = []
         for (ex,ey,ew,eh) in mouths:
             cropped_mouth = roi_color[ey:(ey + eh), ex:(ex+ew)]
+            if draw: cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),2)
             # coordinates in original image where mouth is (centered coord)
             ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
-            data = EyeData(cropped_mouth=cropped_mouth, original_image_x=ox, original_image_y=oy)
+            data = MouthData(cropped_mouth=cropped_mouth, original_image_x=ox, original_image_y=oy)
             detected_mouth_information.append(data)
-        
+        if draw:
+            cv2.imshow('Mouth Detection', self.color_img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
         return detected_mouth_information
+
+    
+    
+    # def dlib_get_facial_features(self):
+    #     dlib_pretrained_model_path = "shape_predictor_68_face_landmarks.dat"
+    #     detector = dlib.get_frontal_face_detector()
+    #     predictor = dlib.shape_predictor(dlib_pretrained_model_path)
+
+    #     faces = detector(self.gray_img, 1)
+
+    #     for face in faces:
+    #         facial_features = predictor(self.gray_img, face)
+    #         facial_features = face_utils.shape_to_np(facial_features)
+    #         for x, y in facial_features:
+    #             cv2.circle(self.color_img, (x, y), 1, (0, 0, 255), -1)
+        
+    #     cv2.imshow("Output", self.color_img)
+    #     cv2.waitKey(0)
+
+
+
+if __name__ == "__main__":
+    f = Filter(image_url="test_images/getty_517194189_373099.jpeg")
+    # f.dlib_get_facial_features()
+    # faces = f.get_faces()
+    # for face in faces:
+    #     f.get_mouths(face, draw=True)
+
+
