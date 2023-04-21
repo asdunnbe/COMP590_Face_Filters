@@ -13,7 +13,7 @@ def main():
         frame = frame[:,::-1]
 
         face_filter = Filter(use_url=False, input_image=frame)
-        face_filter.applyEyeFilter(1, 17)
+        face_filter.applyEyeFilter(1, 30)
 
         new_frame = face_filter.modified_img
     

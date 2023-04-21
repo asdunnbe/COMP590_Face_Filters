@@ -77,6 +77,8 @@ class Filter:
             data = EyeData(cropped_eye=cropped_eye, original_image_x=ox, original_image_y=oy)
             detected_eye_information.append(data)
         
+        detected_eye_information = sorted(detected_eye_information, key=lambda x: x.ox, reverse=True)
+
         return detected_eye_information
     
     
@@ -146,20 +148,24 @@ class Filter:
         # detects mouths within the detected face area (roi)
         mouths = mouth_cascade.detectMultiScale(roi_gray)
 
-        # draws a rectangle around each mouth (expected 1)
-        detected_mouth_information = []
-        for (ex,ey,ew,eh) in mouths:
-            cropped_mouth = roi_color[ey:(ey + eh), ex:(ex+ew)]
-            if draw: cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),2)
-            # coordinates in original image where mouth is (centered coord)
-            ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
-            data = MouthData(cropped_mouth=cropped_mouth, original_image_x=ox, original_image_y=oy)
-            detected_mouth_information.append(data)
-        if draw:
-            cv2.imshow('Mouth Detection', self.color_img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-        return detected_mouth_information
+        for mouth in mouths:
+            for (ex,ey,ew,eh) in mouth:
+                cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+
+        # # draws a rectangle around each mouth (expected 1)
+        # detected_mouth_information = []
+        # for (ex,ey,ew,eh) in mouths:
+        #     cropped_mouth = roi_color[ey:(ey + eh), ex:(ex+ew)]
+        #     if draw: cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),2)
+        #     # coordinates in original image where mouth is (centered coord)
+        #     ox, oy = (x + ex + (ew // 2)), (y + ey + (eh // 2))
+        #     data = MouthData(cropped_mouth=cropped_mouth, original_image_x=ox, original_image_y=oy)
+        #     detected_mouth_information.append(data)
+        # if draw:
+        #     cv2.imshow('Mouth Detection', self.color_img)
+        #     cv2.waitKey(0)
+        #     cv2.destroyAllWindows()
+        # return detected_mouth_information
 
     
     
@@ -183,9 +189,10 @@ class Filter:
 
 if __name__ == "__main__":
     f = Filter(image_url="test_images/getty_517194189_373099.jpeg")
+    # f.get_mouths()
     # f.dlib_get_facial_features()
-    # faces = f.get_faces()
-    # for face in faces:
-    #     f.get_mouths(face, draw=True)
+    faces = f.get_faces()
+    for face in faces:
+        f.get_mouths(face, draw=True)
 
 
