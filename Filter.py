@@ -12,7 +12,7 @@ class EyeData:
     def __init__(self, original_image_x, original_image_y, cropped_eye) -> None:
         self.ox = original_image_x
         self.oy = original_image_y
-        self.eye_img = cropped_eye
+        self.eye_img = np.array(cropped_eye)
 
 
 class MouthData:
@@ -49,7 +49,9 @@ class Filter:
 
     
     # eye feature related functions
-    def get_scaled_up_eyes(self, scale_factor = 1):
+    def get_scaled_up_eyes(self, eye_info, scale_factor = 1):
+        # e = np
+
         # grow our original image
         # find eyes on larger image, this will give us larger eye matrices/crops
         # pair these with center coords for regular size image to draw scaled up eyes.
