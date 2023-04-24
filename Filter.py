@@ -49,13 +49,20 @@ class Filter:
 
     
     # eye feature related functions
-    def get_scaled_up_eyes(self, eye_info, scale_factor = 1):
-        # e = np
+    def get_scaled_up_eyes(self, eye_info: EyeData, scale_factor = 2):
+        w, h, z = eye_info.eye_img.shape
+        bigger_eye = cv2.resize(eye_info.eye_img, dsize=(scale_factor * w, scale_factor * h), interpolation=cv2.INTER_LINEAR)
+        return bigger_eye
+        # bigger_eye = np.resize(eye_info.eye_img, (scale_factor * h, scale_factor * w, z))
+        # breakpoint()
+        # cv2.imshow("Original", eye_info.eye_img)
+        # cv2.imshow("Bigger", bigger_eye)
+        # cv2.waitKey(0)
 
         # grow our original image
         # find eyes on larger image, this will give us larger eye matrices/crops
         # pair these with center coords for regular size image to draw scaled up eyes.
-        ...
+        
 
 
     def get_eyes(self, face):
@@ -84,7 +91,7 @@ class Filter:
         return detected_eye_information
     
     
-    def rotateEye(self, eye, degree, scale):
+    def rotateEye(self, eye, degree, scale = 1):
         """Takes in an eye (img) and rotates it and scales it up as specified"""
         h, w = len(eye), len(eye[0])
         cr = (w // 2, h // 2)
@@ -129,13 +136,17 @@ class Filter:
 
             for i, eye in enumerate(eyes):
                 if i % 2 == 1:
-                    rotated_eye = self.rotateEye(eye.eye_img, rotation, scale)
+                    rotated_eye = self.rotateEye(eye.eye_img, rotation)
                     eye.eye_img = rotated_eye
+                    scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
+                    eye.eye_img = scaled_eye
                     self.drawEye(eye)
                 else:
-                    rotated_eye = self.rotateEye(eye.eye_img, -rotation, scale)
+                    rotated_eye = self.rotateEye(eye.eye_img, -rotation)
                     eye.eye_img = rotated_eye
-                    self.drawEye(eye)
+                    scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
+                    eye.eye_img = scaled_eye
+                self.drawEye(eye)
         
     
     # mouth feature related functions

@@ -217,4 +217,4 @@ settingsTabs.grid(row=0, column=3, columnspan=3,
 submitBtn.grid(row=1, column=4, 
                sticky='N', padx=3, pady=3)
 
-root.mainloop()
+# root.mainloop()
