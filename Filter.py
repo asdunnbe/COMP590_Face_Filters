@@ -29,7 +29,6 @@ class MouthData:
 class Filter:
 
     def __init__(self, image_url = None, use_url = True, input_image = None) -> None:
-        
         if use_url:
             self.color_img = cv2.imread(image_url)
             self.gray_img = cv2.cvtColor(self.color_img, cv2.COLOR_BGR2GRAY)
@@ -47,26 +46,10 @@ class Filter:
         faces = face_cascade.detectMultiScale(self.gray_img, 1.1, 4)
         return faces
 
-    
-    # eye feature related functions
-    def get_scaled_up_eyes(self, eye_info: EyeData, scale_factor = 2):
-        w, h, z = eye_info.eye_img.shape
-        bigger_eye = cv2.resize(eye_info.eye_img, dsize=(scale_factor * w, scale_factor * h), interpolation=cv2.INTER_LINEAR)
-        return bigger_eye
-        # bigger_eye = np.resize(eye_info.eye_img, (scale_factor * h, scale_factor * w, z))
-        # breakpoint()
-        # cv2.imshow("Original", eye_info.eye_img)
-        # cv2.imshow("Bigger", bigger_eye)
-        # cv2.waitKey(0)
 
-        # grow our original image
-        # find eyes on larger image, this will give us larger eye matrices/crops
-        # pair these with center coords for regular size image to draw scaled up eyes.
-        
-
-
+    #eye feature related functions
     def get_eyes(self, face):
-        """Finds all detecablt eyes in a given face"""
+        """Finds all detectable eyes in a given face"""
         eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye_tree_eyeglasses.xml')
         
         (x,y,w,h) = face
@@ -90,14 +73,21 @@ class Filter:
 
         return detected_eye_information
     
-    
+
     def rotateEye(self, eye, degree, scale = 1):
-        """Takes in an eye (img) and rotates it and scales it up as specified"""
+        """Takes in an eye (img) and rotates it as specified"""
         h, w = len(eye), len(eye[0])
         cr = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(cr, degree, scale)
         rotated_eye = cv2.warpAffine(eye, M, (w, h))
         return rotated_eye
+
+
+    def get_scaled_up_eyes(self, eye_info: EyeData, scale_factor = 2):
+        """Scales up a given eye image using linear interpolation"""
+        w, h, z = eye_info.eye_img.shape
+        bigger_eye = cv2.resize(eye_info.eye_img, dsize=(scale_factor * w, scale_factor * h), interpolation=cv2.INTER_LINEAR)
+        return bigger_eye
 
 
     def drawEye(self, eye_info: EyeData):
@@ -128,7 +118,7 @@ class Filter:
 
 
     def applyEyeFilter(self, scale, rotation):
-        """Applys a rotation and scale filter to all detectable eyes in the image"""
+        """Applys a rotation and scale filter to all detectable eyes in the image and then draws them on"""
         faces = self.get_faces()
 
         for face in faces:
@@ -149,6 +139,7 @@ class Filter:
                 self.drawEye(eye)
         
     
+
     # mouth feature related functions
     def get_mouths(self, face, draw = False):
         """Finds all detectable eyes in a given face"""

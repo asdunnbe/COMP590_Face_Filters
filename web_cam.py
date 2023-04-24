@@ -3,7 +3,6 @@ import cv2
 from Filter import Filter
 
 
-
 def main():
     vid = cv2.VideoCapture(0)
     
