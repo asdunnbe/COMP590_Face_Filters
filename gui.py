@@ -1,19 +1,14 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk
-
-COL1 = '#FFF4E0'
-COL2 = '#FFBF9B'
-COL3 = '#B46060'
-COL4 = '#4D4D4D'
-SCALE_LENGTH = 200
+from tkinter import filedialog
 
 class ImageAlignmentFrame(tk.Tk):
-      # COL1 = '#FFF4E0'
-      # COL2 = '#FFBF9B'
-      # COL3 = '#B46060'
-      # COL4 = '#4D4D4D'
-      # SCALE_LENGTH = 200
+      COL1 = '#FFF4E0'
+      COL2 = '#FFBF9B'
+      COL3 = '#B46060'
+      COL4 = '#4D4D4D'
+      SCALE_LENGTH = 200
 
       imgH = 300
       imgW = 300
@@ -36,30 +31,37 @@ class ImageAlignmentFrame(tk.Tk):
       reyeSized = reyeRaw.resize((eS,eS))
       reyeRotated = reyeSized
 
+      iS = int(.1*imgH)
+      fileRaw = Image.open('assets/file3.png')
+      fileSized = fileRaw.resize((iS, iS))
+
+      camRaw = Image.open('assets/cam3.png')
+      camSized = camRaw.resize((iS, iS))
+
       def __init__(self):
             super(ImageAlignmentFrame, self).__init__()
             self.title('Title')
-            self.config(background=COL1)
+            self.config(background=self.COL1)
 
             # styling
             s = ttk.Style()
             s.theme_use('default')
-            s.configure('TLabel', background=COL1, foreground=COL4, padding=3)
-            s.configure('TFrame', background=COL1)
-            s.configure('TNotebook', background=COL2, borderwidth=0, padding=2)
-            s.configure('TNotebook.Tab', background=COL2, foreground=COL4, 
+            s.configure('TLabel', background=self.COL1, foreground=self.COL4, padding=3)
+            s.configure('TFrame', background=self.COL1)
+            s.configure('TNotebook', background=self.COL2, borderwidth=0, padding=2)
+            s.configure('TNotebook.Tab', background=self.COL2, foreground=self.COL4, 
                         borderwidth=0, padding=3)
-            s.map('TNotebook.Tab', background=[('selected',COL1), ('focus',COL1)], 
-                  foreground=[('selected',COL4)])
+            s.map('TNotebook.Tab', background=[('selected',self.COL1), ('focus',self.COL1)], 
+                  foreground=[('selected',self.COL4)])
 
 
             # create image
             self.imgCvs = tk.Canvas(self, height=self.imgH, width=self.imgW,
-                              background=COL1, highlightbackground=COL2)
+                              background=self.COL1, highlightbackground=self.COL2)
 
             face = self.imgCvs.create_oval((self.imgW - self.fW)/2, (self.imgH - self.fH)/2,
                                     (self.imgW + self.fW)/2, (self.imgH + self.fH)/2,
-                                    outline=COL4)
+                                    outline=self.COL4)
 
             self.mouthImg = ImageTk.PhotoImage(self.mouthSized)
             self.mouth = self.imgCvs.create_image(self.imgW/2, (self.imgH+self.fH/2)/2,
@@ -83,13 +85,13 @@ class ImageAlignmentFrame(tk.Tk):
             # choose eye rotation angle
             eRotationFrm = ttk.Frame(eyesTabFrm)
             eRotLbl = ttk.Label(eRotationFrm, text='Rotation')
-            eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=COL3)
+            eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=self.COL3)
             self.eRotScl = tk.Scale(eRotationFrm, orient='horizontal',
-                              background=COL1,
-                              highlightbackground=COL2, troughcolor=COL3,
-                              length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
-                              resolution=10, command=self.eyeRotate)
-            eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=COL3)
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=-180, to=180, showvalue=0,
+                              resolution=5, command=self.eyeRotate)
+            eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=self.COL3)
 
             eRotLbl.grid(row=0, column=1, sticky='W')
             eRotMinLbl.grid(row=1, column=0)
@@ -99,13 +101,13 @@ class ImageAlignmentFrame(tk.Tk):
             # choose eye resize
             eResizeFrm = ttk.Frame(eyesTabFrm)
             eResLbl = ttk.Label(eResizeFrm, text='Resize')
-            eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=COL3)
+            eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=self.COL3)
             self.eResScl = tk.Scale(eResizeFrm, orient='horizontal',
-                              background=COL1,
-                              highlightbackground=COL2, troughcolor=COL3,
-                              length=SCALE_LENGTH, from_=1.0, to=2.0, showvalue=0,
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=1.0, to=2.0, showvalue=0,
                               resolution=0.05, command=self.eyeResize)
-            eResMaxLbl = ttk.Label(eResizeFrm, text='200%', foreground=COL3)
+            eResMaxLbl = ttk.Label(eResizeFrm, text='200%', foreground=self.COL3)
 
             eResLbl.grid(row=0, column=1, sticky='W')
             eResMinLbl.grid(row=1, column=0)
@@ -124,13 +126,13 @@ class ImageAlignmentFrame(tk.Tk):
             # choose mouth rotation angle
             mRotationFrm = ttk.Frame(mouthTabFrm)
             mRotLbl = ttk.Label(mRotationFrm, text='Rotation')
-            mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=COL3)
+            mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=self.COL3)
             self.mRotScl = tk.Scale(mRotationFrm, orient='horizontal', 
-                              background=COL1,
-                              highlightbackground=COL2, troughcolor=COL3,
-                              length=SCALE_LENGTH, from_=-180, to=180, showvalue=0,
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=-180, to=180, showvalue=0,
                               resolution=180, command=self.mouthRotate)
-            mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=COL3)
+            mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=self.COL3)
 
             mRotLbl.grid(row=0, column=1, sticky='W')
             mRotMinLbl.grid(row=1, column=0)
@@ -140,39 +142,57 @@ class ImageAlignmentFrame(tk.Tk):
             # choose mouth resize
             mResizeFrm = ttk.Frame(mouthTabFrm)
             mResLbl = ttk.Label(mResizeFrm, text='Resize')
-            mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=COL3)
+            mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=self.COL3)
             self.mResScl = tk.Scale(mResizeFrm, orient='horizontal',
-                              background=COL1,
-                              highlightbackground=COL2, troughcolor=COL3,
-                              length=SCALE_LENGTH, from_=1.0, to=2.5, showvalue=0,
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=1.0, to=2.5, showvalue=0,
                               resolution=0.05, command=self.mouthResize)
-            mResMaxLbl = ttk.Label(mResizeFrm, text='250%', foreground=COL3)
+            mResMaxLbl = ttk.Label(mResizeFrm, text='250%', foreground=self.COL3)
 
             mResLbl.grid(row=0, column=1, sticky='W')
             mResMinLbl.grid(row=1, column=0)
             self.mResScl.grid(row=1, column=1)
             mResMaxLbl.grid(row=1, column=2)
 
-
             # place things in mouth tab
             mRotationFrm.pack(pady=10, padx=5)
             mResizeFrm.pack(pady=10, padx=5)
             settingsTabs.add(mouthTabFrm, text='mouth')
 
+            # icons, file and webcam buttons
+            iconsFrm = ttk.Frame(self)
+
+            # file button
+            self.fileImg = ImageTk.PhotoImage(self.fileSized)
+            fileBtn = tk.Label(iconsFrm, image=self.fileImg,
+                               background=self.COL1)
+            fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
+
+            # cam button
+            self.camImg = ImageTk.PhotoImage(self.camSized)
+            camBtn = tk.Label(iconsFrm, image=self.camImg,
+                              background=self.COL1)
+            camBtn.bind('<Button-1>', lambda e:self.openWebCam())
+
+            fileBtn.grid(row=0, column=1)
+            camBtn.grid(row=0, column=0)
+
+            # submit button
             submitBtn = tk.Label(self, text='submit', 
-                              background=COL3, foreground=COL1,
-                              borderwidth=3, relief='flat',
+                              background=self.COL3, foreground=self.COL1,
                               padx=5, pady=5)
             submitBtn.bind('<Button-1>', lambda e:self.getSettings())
 
-
             # grid
-            self.imgCvs.grid(row=0, column=0, rowspan=2, 
+            self.imgCvs.grid(row=0, column=1, rowspan=5, 
                         sticky='NW', padx=10, pady=10)
-            settingsTabs.grid(row=0, column=3, columnspan=3, 
-                  sticky='N', padx=5, pady=10)
-            submitBtn.grid(row=1, column=4, 
-                        sticky='N', padx=3, pady=3)
+            settingsTabs.grid(row=0, column=2, columnspan=6, 
+                        sticky='N', padx=5, pady=10)
+            iconsFrm.grid(row=1, column=2,
+                        sticky='NW', padx=5)
+            submitBtn.grid(row=4, column=3,
+                        sticky='S', padx=3, pady=10)
 
       def eyeRotate(self, val):
             angle = int(val)
@@ -214,6 +234,12 @@ class ImageAlignmentFrame(tk.Tk):
             self.mouthImg = ImageTk.PhotoImage(self.mouthResized)
             self.imgCvs.itemconfig(self.mouth, image=self.mouthImg)
 
+      def getImagePath(self):
+            self.file_path = tk.filedialog.askopenfilename()
+            print(self.file_path)
+
+      def openWebCam(self):
+            print('ideally, this would open the webcam and do the things')
 
       # submit Button
       def getSettings(self):
@@ -222,7 +248,6 @@ class ImageAlignmentFrame(tk.Tk):
             print(f'mouth rotation: ', self.mRotScl.get())
             print(f'mouth resize: ', self.mResScl.get())
             print('button clicked')
-
 
 
 if __name__ == '__main__':
