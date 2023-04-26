@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 
 class ImageAlignmentFrame(tk.Tk):
       COL1 = '#FFF4E0'
@@ -165,9 +166,9 @@ class ImageAlignmentFrame(tk.Tk):
 
             # file button
             self.fileImg = ImageTk.PhotoImage(self.fileSized)
-            fileBtn = tk.Label(iconsFrm, image=self.fileImg,
+            self.fileBtn = tk.Label(iconsFrm, image=self.fileImg,
                                background=self.COL1)
-            fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
+            self.fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
 
             # cam button
             self.camImg = ImageTk.PhotoImage(self.camSized)
@@ -175,7 +176,7 @@ class ImageAlignmentFrame(tk.Tk):
                               background=self.COL1)
             camBtn.bind('<Button-1>', lambda e:self.openWebCam())
 
-            fileBtn.grid(row=0, column=1)
+            self.fileBtn.grid(row=0, column=1)
             camBtn.grid(row=0, column=0)
 
             # submit button
@@ -188,9 +189,9 @@ class ImageAlignmentFrame(tk.Tk):
             self.imgCvs.grid(row=0, column=1, rowspan=5, 
                         sticky='NW', padx=10, pady=10)
             settingsTabs.grid(row=0, column=2, columnspan=6, 
-                        sticky='N', padx=5, pady=10)
+                        sticky='N', padx=10, pady=10)
             iconsFrm.grid(row=1, column=2,
-                        sticky='NW', padx=5)
+                        sticky='NW', padx=10)
             submitBtn.grid(row=4, column=3,
                         sticky='S', padx=3, pady=10)
 
@@ -235,19 +236,31 @@ class ImageAlignmentFrame(tk.Tk):
             self.imgCvs.itemconfig(self.mouth, image=self.mouthImg)
 
       def getImagePath(self):
-            self.file_path = tk.filedialog.askopenfilename()
-            print(self.file_path)
+            self.image_path = tk.filedialog.askopenfilename()
+            # print(self.image_path)
+            try:
+                  faceRaw = Image.open(self.image_path)
+                  faceSized = faceRaw.resize((int(faceRaw.width * self.iS / faceRaw.height), self.iS))
+                  self.fileImg = ImageTk.PhotoImage(faceSized)
+                  self.fileBtn.config(image=self.fileImg)
+            except:
+                  tk.messagebox.showerror('Image Error', 'Please make sure your image is an image.')
 
       def openWebCam(self):
             print('ideally, this would open the webcam and do the things')
 
       # submit Button
       def getSettings(self):
-            print(f'eye rotation: ', self.eRotScl.get())
-            print(f'eye resize: ', self.eResScl.get())
-            print(f'mouth rotation: ', self.mRotScl.get())
-            print(f'mouth resize: ', self.mResScl.get())
-            print('button clicked')
+            try:
+                  print(f'image path: ', self.image_path)
+                  print(f'eye rotation: ', self.eRotScl.get())
+                  print(f'eye resize: ', self.eResScl.get())
+                  print(f'mouth rotation: ', self.mRotScl.get())
+                  print(f'mouth resize: ', self.mResScl.get())
+            except:
+                  tk.messagebox.showerror('Image Error', "Don't forget your image!")
+            finally:
+                  print('button clicked')
 
 
 if __name__ == '__main__':
