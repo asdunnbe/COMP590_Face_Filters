@@ -43,6 +43,13 @@ class ImageAlignmentFrame(tk.Tk):
       
       blur = False
 
+      iS = int(.1*imgH)
+      fileRaw = Image.open('assets/file3.png')
+      fileSized = fileRaw.resize((iS, iS))
+
+      camRaw = Image.open('assets/cam3.png')
+      camSized = camRaw.resize((iS, iS))
+
       def __init__(self):
             super(ImageAlignmentFrame, self).__init__()
             self.title('Title')
@@ -252,7 +259,6 @@ class ImageAlignmentFrame(tk.Tk):
                   print(f'blur background: ', self.blur)
             finally:
                   print('button clicked')
-
 
 if __name__ == '__main__':
       app = ImageAlignmentFrame()
