@@ -137,8 +137,23 @@ class Filter:
                     scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
                     eye.eye_img = scaled_eye
                 self.drawEye(eye)
-        
-    
+
+
+    # def drawEye(self, eye_info: EyeData):
+    #     """Takes an eye data object and draws it on our original image by placing it at the eyes center"""
+    #     ew, eh = len(eye_info.eye_img[0]) // 2, len(eye_info.eye_img) // 2
+    #     x, y = eye_info.ox, eye_info.oy
+
+    #     mask = (eye_info.eye_img != 0)
+
+    #     try:
+    #         sub_img = self.color_img[y-eh:y+eh, x-ew:x+ew]
+    #         sub_img[mask] = eye_info.eye_img[mask]
+
+    #         self.modified_img[y-eh:y+eh, x-ew:x+ew] = sub_img
+
+    #     except Exception as e:
+    #         print(e)
 
     # mouth feature related functions
     def get_mouths(self, face, draw = False):
