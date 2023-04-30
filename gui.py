@@ -4,10 +4,14 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import cv2
+<<<<<<< HEAD
 from datetime import datetime
 import os
 
 from Toggle import Toggle
+=======
+
+>>>>>>> dd190ce... webcam linked up
 from Filter import Filter
 from remove_background import MPSegmentation
 
@@ -152,6 +156,63 @@ class ImageAlignmentFrame(tk.Tk):
             blurFrm.pack(pady=10, padx=5)
             settingsTabs.add(otherTabFrm, text='other')
 
+<<<<<<< HEAD
+=======
+            # choose mouth rotation angle
+            mRotationFrm = ttk.Frame(mouthTabFrm)
+            mRotLbl = ttk.Label(mRotationFrm, text='Rotation')
+            mRotMinLbl = ttk.Label(mRotationFrm, text='-180°', foreground=self.COL3)
+            self.mRotScl = tk.Scale(mRotationFrm, orient='horizontal', 
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=-180, to=180, showvalue=0,
+                              resolution=180, command=self.mouthRotate)
+            mRotMaxLbl = ttk.Label(mRotationFrm, text='180°', foreground=self.COL3)
+
+            mRotLbl.grid(row=0, column=1, sticky='W')
+            mRotMinLbl.grid(row=1, column=0)
+            self.mRotScl.grid(row=1, column=1)
+            mRotMaxLbl.grid(row=1, column=2)
+
+            # choose mouth resize
+            mResizeFrm = ttk.Frame(mouthTabFrm)
+            mResLbl = ttk.Label(mResizeFrm, text='Resize')
+            mResMinLbl = ttk.Label(mResizeFrm, text='100%', foreground=self.COL3)
+            self.mResScl = tk.Scale(mResizeFrm, orient='horizontal',
+                              background=self.COL1,
+                              highlightbackground=self.COL2, troughcolor=self.COL3,
+                              length=self.SCALE_LENGTH, from_=1.0, to=2.5, showvalue=0,
+                              resolution=0.05, command=self.mouthResize)
+            mResMaxLbl = ttk.Label(mResizeFrm, text='250%', foreground=self.COL3)
+
+            mResLbl.grid(row=0, column=1, sticky='W')
+            mResMinLbl.grid(row=1, column=0)
+            self.mResScl.grid(row=1, column=1)
+            mResMaxLbl.grid(row=1, column=2)
+
+            # place things in mouth tab
+            mRotationFrm.pack(pady=10, padx=5)
+            mResizeFrm.pack(pady=10, padx=5)
+            settingsTabs.add(mouthTabFrm, text='mouth')
+
+            # # icons, file and webcam buttons
+            # iconsFrm = ttk.Frame(self)
+
+            # # file button
+            # self.fileImg = ImageTk.PhotoImage(self.fileSized)
+            # self.fileBtn = tk.Label(iconsFrm, image=self.fileImg,
+            #                    background=self.COL1)
+            # self.fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
+
+            # # cam button
+            # self.camImg = ImageTk.PhotoImage(self.camSized)
+            # camBtn = tk.Label(iconsFrm, image=self.camImg,
+            #                   background=self.COL1)
+            # camBtn.bind('<Button-1>', lambda e:self.openWebCam())
+
+            # self.fileBtn.grid(row=0, column=1)
+            # camBtn.grid(row=0, column=0)
+>>>>>>> dd190ce... webcam linked up
 
             # submit button
             submitBtn = tk.Label(self, text='submit', 
@@ -194,6 +255,7 @@ class ImageAlignmentFrame(tk.Tk):
             self.imgCvs.itemconfig(self.reye, image=self.reyeImg)
             # print(f'{eS} * {val} = {nEyeSize}')
 
+<<<<<<< HEAD
       def toggleBlur(self):
             print(f'toggle clicked {self.blur}')
             if (self.blur):
@@ -250,6 +312,58 @@ class ImageAlignmentFrame(tk.Tk):
                   cv2.destroyAllWindows()
                   # reopen gui
                   self.deiconify()
+=======
+      def mouthRotate(self, val):
+            angle = int(val)
+            self.mouthRotated = self.mouthSized.rotate(angle)
+            self.mouthImg = ImageTk.PhotoImage(self.mouthRotated)
+            self.imgCvs.itemconfig(self.mouth, image=self.mouthImg)
+
+
+      def mouthResize(self, val):
+            nMouthW = int( float(val) * self.mW )
+            nMouthH = int( float(val) * self.mH )
+            self.mouthSized = self.mouthRaw.resize((nMouthW, nMouthH))
+            self.mouthResized = self.mouthRotated.resize((nMouthW, nMouthH))
+            self.mouthImg = ImageTk.PhotoImage(self.mouthResized)
+            self.imgCvs.itemconfig(self.mouth, image=self.mouthImg)
+
+      # def getImagePath(self):
+      #       self.image_path = tk.filedialog.askopenfilename()
+      #       # print(self.image_path)
+      #       try:
+      #             faceRaw = Image.open(self.image_path)
+      #             faceSized = faceRaw.resize((int(faceRaw.width * self.iS / faceRaw.height), self.iS))
+      #             self.fileImg = ImageTk.PhotoImage(faceSized)
+      #             self.fileBtn.config(image=self.fileImg)
+      #       except:
+      #             tk.messagebox.showerror('Image Error', 'Please make sure your image is an image.')
+
+      def openWebCam(self):
+            # print('ideally, this would open the webcam and do the things')
+            # self.withdraw()
+            vid = cv2.VideoCapture(0)
+            while(True):
+                  ret, frame = vid.read()
+                  frame = frame[:,::-1]
+
+                  face_filter = Filter(use_url=False, input_image=frame)
+                  face_filter.applyEyeFilter(self.eResScl.get(), self.eRotScl.get())
+
+                  new_frame = face_filter.modified_img
+            
+
+                  # display webcam
+                  cv2.imshow('PRESS Q TO EXIT', new_frame)
+                  if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+
+            # After the loop release the cap object
+            vid.release()
+            # Destroy all the windows
+            cv2.destroyAllWindows()
+            # self.deiconify()
+>>>>>>> dd190ce... webcam linked up
 
       # submit Button
       def getSettings(self):
