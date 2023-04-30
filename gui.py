@@ -3,6 +3,9 @@ from PIL import ImageTk, Image
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+import cv2
+
+from Filter import Filter
 
 class ImageAlignmentFrame(tk.Tk):
       COL1 = '#FFF4E0'
@@ -161,37 +164,37 @@ class ImageAlignmentFrame(tk.Tk):
             mResizeFrm.pack(pady=10, padx=5)
             settingsTabs.add(mouthTabFrm, text='mouth')
 
-            # icons, file and webcam buttons
-            iconsFrm = ttk.Frame(self)
+            # # icons, file and webcam buttons
+            # iconsFrm = ttk.Frame(self)
 
-            # file button
-            self.fileImg = ImageTk.PhotoImage(self.fileSized)
-            self.fileBtn = tk.Label(iconsFrm, image=self.fileImg,
-                               background=self.COL1)
-            self.fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
+            # # file button
+            # self.fileImg = ImageTk.PhotoImage(self.fileSized)
+            # self.fileBtn = tk.Label(iconsFrm, image=self.fileImg,
+            #                    background=self.COL1)
+            # self.fileBtn.bind('<Button-1>', lambda e:self.getImagePath())            
 
-            # cam button
-            self.camImg = ImageTk.PhotoImage(self.camSized)
-            camBtn = tk.Label(iconsFrm, image=self.camImg,
-                              background=self.COL1)
-            camBtn.bind('<Button-1>', lambda e:self.openWebCam())
+            # # cam button
+            # self.camImg = ImageTk.PhotoImage(self.camSized)
+            # camBtn = tk.Label(iconsFrm, image=self.camImg,
+            #                   background=self.COL1)
+            # camBtn.bind('<Button-1>', lambda e:self.openWebCam())
 
-            self.fileBtn.grid(row=0, column=1)
-            camBtn.grid(row=0, column=0)
+            # self.fileBtn.grid(row=0, column=1)
+            # camBtn.grid(row=0, column=0)
 
             # submit button
             submitBtn = tk.Label(self, text='submit', 
                               background=self.COL3, foreground=self.COL1,
                               padx=5, pady=5)
-            submitBtn.bind('<Button-1>', lambda e:self.getSettings())
+            submitBtn.bind('<Button-1>', lambda e:self.openWebCam())
 
             # grid
             self.imgCvs.grid(row=0, column=1, rowspan=5, 
                         sticky='NW', padx=10, pady=10)
-            settingsTabs.grid(row=0, column=2, columnspan=6, 
+            settingsTabs.grid(row=0, column=2, columnspan=3, 
                         sticky='N', padx=10, pady=10)
-            iconsFrm.grid(row=1, column=2,
-                        sticky='NW', padx=10)
+            # iconsFrm.grid(row=1, column=2,
+            #             sticky='NW', padx=10)
             submitBtn.grid(row=4, column=3,
                         sticky='S', padx=3, pady=10)
 
@@ -235,19 +238,41 @@ class ImageAlignmentFrame(tk.Tk):
             self.mouthImg = ImageTk.PhotoImage(self.mouthResized)
             self.imgCvs.itemconfig(self.mouth, image=self.mouthImg)
 
-      def getImagePath(self):
-            self.image_path = tk.filedialog.askopenfilename()
-            # print(self.image_path)
-            try:
-                  faceRaw = Image.open(self.image_path)
-                  faceSized = faceRaw.resize((int(faceRaw.width * self.iS / faceRaw.height), self.iS))
-                  self.fileImg = ImageTk.PhotoImage(faceSized)
-                  self.fileBtn.config(image=self.fileImg)
-            except:
-                  tk.messagebox.showerror('Image Error', 'Please make sure your image is an image.')
+      # def getImagePath(self):
+      #       self.image_path = tk.filedialog.askopenfilename()
+      #       # print(self.image_path)
+      #       try:
+      #             faceRaw = Image.open(self.image_path)
+      #             faceSized = faceRaw.resize((int(faceRaw.width * self.iS / faceRaw.height), self.iS))
+      #             self.fileImg = ImageTk.PhotoImage(faceSized)
+      #             self.fileBtn.config(image=self.fileImg)
+      #       except:
+      #             tk.messagebox.showerror('Image Error', 'Please make sure your image is an image.')
 
       def openWebCam(self):
-            print('ideally, this would open the webcam and do the things')
+            # print('ideally, this would open the webcam and do the things')
+            # self.withdraw()
+            vid = cv2.VideoCapture(0)
+            while(True):
+                  ret, frame = vid.read()
+                  frame = frame[:,::-1]
+
+                  face_filter = Filter(use_url=False, input_image=frame)
+                  face_filter.applyEyeFilter(self.eResScl.get(), self.eRotScl.get())
+
+                  new_frame = face_filter.modified_img
+            
+
+                  # display webcam
+                  cv2.imshow('PRESS Q TO EXIT', new_frame)
+                  if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+
+            # After the loop release the cap object
+            vid.release()
+            # Destroy all the windows
+            cv2.destroyAllWindows()
+            # self.deiconify()
 
       # submit Button
       def getSettings(self):
