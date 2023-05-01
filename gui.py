@@ -109,8 +109,8 @@ class ImageAlignmentFrame(tk.Tk):
             self.eResScl = tk.Scale(eResizeFrm, orient='horizontal',
                               background=self.COL1,
                               highlightbackground=self.COL2, troughcolor=self.COL3,
-                              length=self.SCALE_LENGTH, from_=1.0, to=2.0, showvalue=0,
-                              resolution=0.05, command=self.eyeResize)
+                              length=self.SCALE_LENGTH, from_=1, to=2, showvalue=0,
+                              resolution=1, command=self.eyeResize)
             eResMaxLbl = ttk.Label(eResizeFrm, text='200%', foreground=self.COL3)
 
             eResLbl.grid(row=0, column=1, sticky='W')
@@ -150,8 +150,8 @@ class ImageAlignmentFrame(tk.Tk):
             self.mResScl = tk.Scale(mResizeFrm, orient='horizontal',
                               background=self.COL1,
                               highlightbackground=self.COL2, troughcolor=self.COL3,
-                              length=self.SCALE_LENGTH, from_=1.0, to=2.5, showvalue=0,
-                              resolution=0.05, command=self.mouthResize)
+                              length=self.SCALE_LENGTH, from_=1, to=2, showvalue=0,
+                              resolution=1, command=self.mouthResize)
             mResMaxLbl = ttk.Label(mResizeFrm, text='250%', foreground=self.COL3)
 
             mResLbl.grid(row=0, column=1, sticky='W')
@@ -251,14 +251,14 @@ class ImageAlignmentFrame(tk.Tk):
 
       def openWebCam(self):
             # print('ideally, this would open the webcam and do the things')
-            # self.withdraw()
+            self.withdraw()
             vid = cv2.VideoCapture(0)
             while(True):
                   ret, frame = vid.read()
                   frame = frame[:,::-1]
 
                   face_filter = Filter(use_url=False, input_image=frame)
-                  face_filter.applyEyeFilter(self.eResScl.get(), self.eRotScl.get())
+                  face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
                   new_frame = face_filter.modified_img
             
@@ -272,7 +272,7 @@ class ImageAlignmentFrame(tk.Tk):
             vid.release()
             # Destroy all the windows
             cv2.destroyAllWindows()
-            # self.deiconify()
+            self.deiconify()
 
       # submit Button
       def getSettings(self):
