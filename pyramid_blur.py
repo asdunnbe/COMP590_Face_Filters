@@ -19,8 +19,9 @@ def laplacian_pyramid(gaussian_pyr):
     for i in range(num_levels,0,-1):
         size = (gaussian_pyr[i - 1].shape[1], gaussian_pyr[i - 1].shape[0])
         gaussian_expanded = cv2.pyrUp(gaussian_pyr[i], dstsize=size)
-        laplacian = np.subtract(gaussian_pyr[i-1], gaussian_expanded)
+        laplacian = np.subtract(gaussian_pyr[i-1], gaussian_expanded )
         laplacian_pyr.append(laplacian)
+
     return laplacian_pyr
  
 def blend(laplacian_A,laplacian_B,mask_pyr):
@@ -55,6 +56,7 @@ def blur_object(num_levels = 7):
     y1, y2, x1, x2, = 25, 70, 100, 200
     mask = np.zeros_like((img1), dtype='float32')
     mask[25:70, 100:200,:] = (1,1,1)
+    # (0,0,0)
 
     
     # For image-1, calculate Gaussian and Laplacian
@@ -84,9 +86,9 @@ def blur_object(num_levels = 7):
     cv2.imshow('final0', cv2.rectangle(end, (x1, y1), (x2, y2), (255, 0, 0), 2))
     # print('end', end[25:70, 100:200,:])
     # print('img', img1[25:70, 100:200,:])
-    print('times2')
-    print('end', end[70:80, 140:160,:])
-    print('img', img1[70:80, 140:160,:])
+    # print('times2')
+    # print('end', end[70:80, 140:160,:])
+    # print('img', img1[70:80, 140:160,:])
     cv2.waitKey(0)
 
 
