@@ -207,13 +207,13 @@ class ImageAlignmentFrame(tk.Tk):
                         ret, frame = vid.read()
                         frame = frame[:,::-1]
 
-                        # face_filter = Filter(use_url=False, input_image=frame)
-                        # face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
+                        face_filter = Filter(use_url=False, input_image=frame)
+                        face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
-                        # new_frame = face_filter.modified_img
+                        new_frame = face_filter.modified_img
                   
                         # display webcam
-                        cv2.imshow('press ESC to exit; SPACE to screenshot', frame)
+                        cv2.imshow('press ESC to exit; SPACE to screenshot', new_frame)
 
                         k = cv2.waitKey(1)
                         if  k%256 == 27:
@@ -222,7 +222,7 @@ class ImageAlignmentFrame(tk.Tk):
                         elif k%256 == 32:
                               # SPACE pressed
                               img_name = "Screenshots/{}.png".format(datetime.now().strftime('%Y%m%d%H%M%S'))
-                              if (cv2.imwrite(img_name, frame)):
+                              if (cv2.imwrite(img_name, new_frame)):
                                     print("{} saved!".format(img_name))
 
             except:
