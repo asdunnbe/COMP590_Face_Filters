@@ -4,6 +4,8 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import cv2
+from datetime import datetime
+import os
 
 from Toggle import Toggle
 from Filter import Filter
@@ -40,13 +42,6 @@ class ImageAlignmentFrame(tk.Tk):
       reyeRaw = Image.open('assets/reye.png')
       reyeSized = reyeRaw.resize((eS,eS))
       reyeRotated = reyeSized
-
-      # iS = int(.1*imgH)
-      # fileRaw = Image.open('assets/file3.png')
-      # fileSized = fileRaw.resize((iS, iS))
-
-      # camRaw = Image.open('assets/cam3.png')
-      # camSized = camRaw.resize((iS, iS))
       
       blur = False
 
@@ -54,6 +49,9 @@ class ImageAlignmentFrame(tk.Tk):
             super(ImageAlignmentFrame, self).__init__()
             self.title('Title')
             self.config(background=self.COL1)
+
+            if (not os.path.exists('Screenshots')):
+                  os.makedirs('Screenshots')
 
             # styling
             s = ttk.Style()
@@ -201,7 +199,7 @@ class ImageAlignmentFrame(tk.Tk):
                   self.blur = True
 
       def openWebCam(self):
-            # print('ideally, this would open the webcam and do the things')
+            self.getSettings()
             try:
                   self.withdraw()
                   vid = cv2.VideoCapture(0)
@@ -209,27 +207,34 @@ class ImageAlignmentFrame(tk.Tk):
                         ret, frame = vid.read()
                         frame = frame[:,::-1]
 
-                        face_filter = Filter(use_url=False, input_image=frame)
-                        face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
+                        # face_filter = Filter(use_url=False, input_image=frame)
+                        # face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
-                        new_frame = face_filter.modified_img
+                        # new_frame = face_filter.modified_img
                   
-
                         # display webcam
-                        cv2.imshow('PRESS Q TO EXIT', new_frame)
-                        if cv2.waitKey(1) & 0xFF == ord('q'):
-                              break
+                        cv2.imshow('press ESC to exit; SPACE to screenshot', frame)
 
+                        k = cv2.waitKey(1)
+                        if  k%256 == 27:
+                              # ESC pressed
+                              break
+                        elif k%256 == 32:
+                              # SPACE pressed
+                              img_name = "Screenshots/{}.png".format(datetime.now().strftime('%Y%m%d%H%M%S'))
+                              if (cv2.imwrite(img_name, frame)):
+                                    print("{} saved!".format(img_name))
+
+            except:
+                  print('webcam failed')
+                  tk.messagebox.showerror('Webcam Failure', "Webcam failed")
+            finally:
                   # After the loop release the cap object
                   vid.release()
                   # Destroy all the windows
                   cv2.destroyAllWindows()
-            except:
-                  print('webcam failed')
-                  tk.messagebox.showerror('Webcam Failure', "Webcam failed to open")
-            finally:
+                  # reopen gui
                   self.deiconify()
-                  self.getSettings()
 
       # submit Button
       def getSettings(self):
