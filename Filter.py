@@ -105,34 +105,7 @@ class Filter:
         return bigger_eye
 
 
-    def drawEye_one(self, eye_info: EyeData):
-        """Takes an eye data object and draws it on our original image by placing it at the eyes center"""
-        ew, eh = len(eye_info.eye_img[0]) // 2, len(eye_info.eye_img) // 2
-        x, y = eye_info.ox, eye_info.oy
-
-        try:
-            sub_img = self.color_img[y-eh:y+eh, x-ew:x+ew]
-            replacer = [[[0,0,0] for _ in range(len(sub_img[0]))] for _ in range(len(sub_img))]
-
-            for row in range(len(sub_img)):
-                for col in range(len(sub_img[0])):
-                    original_val, new_val = sub_img[row][col], eye_info.eye_img[row][col]
-                    
-                    if new_val.all() < original_val.all():
-                        replacer[row][col] = original_val
-                    else: 
-                        replacer[row][col][0] = new_val[0]
-                        replacer[row][col][1] = new_val[1]
-                        replacer[row][col][2] = new_val[2]
-            
-            replacer = np.array(replacer)
-            self.modified_img[y-eh:y+eh, x-ew:x+ew] = replacer
-            
-        except Exception as e:
-            print(e)
-
-
-    def drawEye_two(self, eye_info: EyeData):
+    def drawEye(self, eye_info: EyeData):
         """Takes an eye data object and draws it on our original image by placing it at the eyes center"""
         ew, eh = len(eye_info.eye_img[0]) // 2, len(eye_info.eye_img) // 2
         x, y = eye_info.ox, eye_info.oy
@@ -190,13 +163,12 @@ class Filter:
                     eye.eye_img = rotated_eye
                     scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
                     eye.eye_img = scaled_eye
-                    # self.drawEye(eye)
                 else:
                     rotated_eye = self.rotateObject(eye.eye_img, -rotation)
                     eye.eye_img = rotated_eye
                     scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
                     eye.eye_img = scaled_eye
-                self.drawEye_two(eye)
+                self.drawEye(eye)
     
 
     def apply_glasses(self, glasses):
@@ -210,23 +182,19 @@ class Filter:
                     left, right = self.eyes[0], self.eyes[1]
                     dx, dy = abs(left.ox - right.ox), abs(left.oy - right.oy)
                     signed_dx, signed_dy = (left.ox - right.ox), (left.oy - right.oy)
-
                     theta = 360 - np.rad2deg(np.arctan(signed_dy / signed_dx))
                     x_padding = math.floor(left.eye_img.shape[0]) * 2
 
                     center_x, center_y = left.ox + math.floor(dx / 2), left.oy + math.floor(dy / 2)
                     glasses = self.rotateObject(glasses, theta)
                     glasses = cv2.resize(glasses, (dx + x_padding, dx + x_padding))
-                    # rotation here to match dy
+
                     self.draw_object(glasses, center_x, center_y)
             except Exception as e:
                 if glasses == None: print("cannot find sunglasses from given path")
                 print(e)
 
     
-    def dlib_get_facial_features(self):
-        ...
-
 
 if __name__ == "__main__":
     images = [
@@ -238,20 +206,10 @@ if __name__ == "__main__":
 
     f = Filter(image_url=images[1])
     glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
-    # glasses = cv2.resize(glasses, (300, 300))
-    # cv2.imshow('glasses', glasses)
-    # cv2.waitKey(0)
     f.apply_glasses(glasses)
-
     # f.applyEyeFilter(1, 30)
     cv2.imshow('final picture', f.modified_img)
     cv2.waitKey(0)
 
-
-    # f.get_mouths()
-    # f.dlib_get_facial_features()
-    # faces = f.get_faces()
-    # for face in faces:
-    #     f.get_mouths(face, draw=True)
 
 

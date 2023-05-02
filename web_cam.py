@@ -17,8 +17,12 @@ def main():
         # need live filter modification by having gui up with webcam
         # blur the face of others entirely? only one lucky face filter winner
         # need good lighting
-        # face_filter.applyEyeFilter(1,90)
-        face_filter.apply_glasses(glasses)
+
+        # choose from the filters here
+        face_filter.applyEyeFilter(1,310)
+        # face_filter.apply_glasses(glasses)
+
+        # our new frame is the modified image with our selected filter applied
         new_frame = face_filter.modified_img
         
         # Display the resulting frame
