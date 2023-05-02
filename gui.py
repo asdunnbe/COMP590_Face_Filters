@@ -29,10 +29,7 @@ class ImageAlignmentFrame(tk.Tk):
       fH = 1.2*fW # face height
 
       mW = int(0.4*fW) # mouth width = 80
-      mH = int(0.15*fH) # mouthx2 height
-      mouthRaw = Image.open('assets/mouth.png')
-      mouthSized = mouthRaw.resize((mW,mH))
-      mouthRotated = mouthSized
+      mH = int(0.25*fH) # mouthx2 height
 
       eS = int(.3*fW) # eye size (square) = 64
       leyeRaw = Image.open('assets/leye.png')
@@ -73,9 +70,9 @@ class ImageAlignmentFrame(tk.Tk):
                                     (self.imgW + self.fW)/2, (self.imgH + self.fH)/2,
                                     outline=self.COL4)
 
-            self.mouthImg = ImageTk.PhotoImage(self.mouthSized)
-            self.mouth = self.imgCvs.create_image(self.imgW/2, (self.imgH+self.fH/2)/2,
-                                    anchor='center', image=self.mouthImg)
+            mouth = self.imgCvs.create_arc((self.imgW - self.mW)/2, (self.imgH + self.fH/2 - self.mH)/2,
+                                    (self.imgW + self.mW)/2, (self.imgH + self.fH/2 + self.mH)/2,
+                                    outline=self.COL3, fill=self.COL3, extent=-180)
 
             self.leyeImg = ImageTk.PhotoImage(self.leyeSized)
             self.leye = self.imgCvs.create_image((self.imgW - self.fW/2)/2, (self.imgH - self.fH/6)/2,
