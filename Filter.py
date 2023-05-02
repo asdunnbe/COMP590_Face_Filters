@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from imutils import face_utils
+import math
 # import dlib
 
 
@@ -81,20 +82,20 @@ class Filter:
             data = EyeData(cropped_eye=cropped_eye, original_image_x=ox, original_image_y=oy, confidence=confidence_score)
             detected_eye_information.append(data)
         
-        detected_eye_information = sorted(detected_eye_information, key=lambda x: x.ox, reverse=True)
+        # detected_eye_information = sorted(detected_eye_information, key=lambda x: x.ox, reverse=True)
+        detected_eye_information = sorted(detected_eye_information, key=lambda x: x.ox, reverse=False)
+
         self.eyes = detected_eye_information
         # return detected_eye_information
     
 
-    def rotateEye(self, eye, degree, scale = 1):
+    def rotateObject(self, my_object, degree, scale = 1):
         """Takes in an eye (img) and rotates it as specified"""
-        h, w = len(eye), len(eye[0])
+        h, w = len(my_object), len(my_object[0])
         cr = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(cr, degree, scale)
-        rotated_eye = cv2.warpAffine(eye, M, (w, h))
-        # kernel_size = (5, 5)
-        # rotated_eye = cv2.GaussianBlur(rotated_eye, kernel_size, cv2.BORDER_DEFAULT)
-        return rotated_eye
+        rotated_object= cv2.warpAffine(my_object, M, (w, h))
+        return rotated_object
 
 
     def get_scaled_up_eyes(self, eye_info: EyeData, scale_factor = 2):
@@ -157,6 +158,24 @@ class Filter:
             print(e)
 
 
+    def draw_object(self, my_object, x, y):
+        h, w, z = my_object.shape
+        if h % 2 == 0 and w % 2 == 0:
+            my_object = my_object[:-1, :-1]
+            h, w, z = my_object.shape
+
+        threshold = 5
+        mask = (my_object > threshold)
+        dx, dy = math.floor(w / 2), math.floor(h / 2)
+
+        try:
+            sub_img = self.color_img[y-dy:y+dy+1,x - dx:x+dx+1]
+            sub_img[mask] = my_object[mask]
+            self.modified_img[y-dy:y+dy+1,x - dx:x+dx+1] = sub_img            
+        except Exception as e:
+            print(e)
+
+
     def applyEyeFilter(self, scale, rotation):
         """Applys a rotation and scale filter to all detectable eyes in the image and then draws them on"""
         self.get_faces()
@@ -167,26 +186,72 @@ class Filter:
             if len(self.eyes) % 2 != 0: continue
             for i, eye in enumerate(self.eyes):
                 if i % 2 == 1:
-                    rotated_eye = self.rotateEye(eye.eye_img, rotation)
+                    rotated_eye = self.rotateObject(eye.eye_img, rotation)
                     eye.eye_img = rotated_eye
                     scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
                     eye.eye_img = scaled_eye
                     # self.drawEye(eye)
                 else:
-                    rotated_eye = self.rotateEye(eye.eye_img, -rotation)
+                    rotated_eye = self.rotateObject(eye.eye_img, -rotation)
                     eye.eye_img = rotated_eye
                     scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
                     eye.eye_img = scaled_eye
                 self.drawEye_two(eye)
     
 
+    def apply_glasses(self, glasses):
+        self.get_faces()
+        
+        for face in self.faces:
+            self.get_eyes(face)
+
+            try: 
+                if len(self.eyes) == 2:
+                    left, right = self.eyes[0], self.eyes[1]
+                    dx, dy = abs(left.ox - right.ox), abs(left.oy - right.oy)
+                    signed_dx, signed_dy = (left.ox - right.ox), (left.oy - right.oy)
+
+                    theta = 360 - np.rad2deg(np.arctan(signed_dy / signed_dx))
+                    x_padding = math.floor(left.eye_img.shape[0]) * 2
+
+                    center_x, center_y = left.ox + math.floor(dx / 2), left.oy + math.floor(dy / 2)
+                    glasses = self.rotateObject(glasses, theta)
+                    glasses = cv2.resize(glasses, (dx + x_padding, dx + x_padding))
+                    # rotation here to match dy
+                    self.draw_object(glasses, center_x, center_y)
+            except Exception as e:
+                if glasses == None: print("cannot find sunglasses from given path")
+                print(e)
+
+    
+    def dlib_get_facial_features(self):
+        ...
+
 
 if __name__ == "__main__":
-    f = Filter(image_url="test_images/getty_517194189_373099.jpeg")
+    images = [
+        "test_images/POTY-cover-tout-d827554fa3c949c59a9d494773a7c409.jpg",
+        "test_images/getty_517194189_373099.jpeg",
+        "test_images/Unknown.jpeg",
+        "test_images/what-is-people-operations-2400x2400-20201118.jpg"
+    ]
+
+    f = Filter(image_url=images[1])
+    glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
+    # glasses = cv2.resize(glasses, (300, 300))
+    # cv2.imshow('glasses', glasses)
+    # cv2.waitKey(0)
+    f.apply_glasses(glasses)
+
+    # f.applyEyeFilter(1, 30)
+    cv2.imshow('final picture', f.modified_img)
+    cv2.waitKey(0)
+
+
     # f.get_mouths()
     # f.dlib_get_facial_features()
-    faces = f.get_faces()
-    for face in faces:
-        f.get_mouths(face, draw=True)
+    # faces = f.get_faces()
+    # for face in faces:
+    #     f.get_mouths(face, draw=True)
 
 
