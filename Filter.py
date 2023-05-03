@@ -178,9 +178,9 @@ class Filter:
             if len(self.eyes) % 2 != 0: continue
             for i, eye in enumerate(self.eyes):
                 if i % 2 == 1:
-                    rotated_eye = self.rotateEye(eye, rotation)
+                    rotated_eye = self.rotateEye(eye, 360 - rotation)
                 else:
-                    rotated_eye = self.rotateEye(eye, -rotation)
+                    rotated_eye = self.rotateEye(eye, 360 + rotation)
 
                 eye.eye_img, eye.mask_current = rotated_eye = rotated_eye
                 eye.eye_img, eye.mask_current = self.get_scaled_up_eyes(eye, scale_factor=scale)
