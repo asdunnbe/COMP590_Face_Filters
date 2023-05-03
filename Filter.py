@@ -10,12 +10,25 @@ class EyeData:
     oy = 0
     eye_img = []
     confidence = 0
+    mask_original = []
+    mask_current = []
 
     def __init__(self, original_image_x, original_image_y, cropped_eye, confidence) -> None:
         self.ox = original_image_x
         self.oy = original_image_y
         self.eye_img = np.array(cropped_eye)
-        self.confidence = confidence
+        self.mask_original = self.make_mask()
+        self.mask_current = self.mask_original
+
+    def make_mask(self):
+        mask = np.zeros_like(self.eye_img[...,0])
+        cx, cy = int(self.eye_img.shape[1]/2), int(self.eye_img.shape[0]/2)
+        a, b = int(self.eye_img.shape[0]), int(self.eye_img.shape[1] * .3)
+        octagon_pts = cv2.ellipse2Poly((cx, cy), (a, b), 0, 0, 360, 1)
+        cv2.fillConvexPoly(mask, octagon_pts, 255)
+        mask = np.stack([mask, mask, mask], axis=2)
+
+        return mask
 
 
 class MouthData:
@@ -33,7 +46,6 @@ class Filter:
 
     eyes = []
     faces = []
-
 
     def __init__(self, image_url = None, use_url = True, input_image = None) -> None:
         if use_url:
@@ -87,7 +99,21 @@ class Filter:
 
         self.eyes = detected_eye_information
         # return detected_eye_information
-    
+
+
+    def rotateEye(self, eye_info: EyeData, degree, scale = 1):
+        """Takes in an eye (img) and rotates it as specified"""
+        eye = eye_info.eye_img
+        h, w = len(eye), len(eye[0])
+        cr = (w // 2, h // 2)
+        M = cv2.getRotationMatrix2D(cr, degree, scale)
+        rotated_eye = cv2.warpAffine(eye, M, (w, h))
+
+        # create mask for eye
+        mask = cv2.warpAffine(eye_info.mask_original, M, (w, h))
+
+        return rotated_eye, mask
+
 
     def rotateObject(self, my_object, degree, scale = 1):
         """Takes in an eye (img) and rotates it as specified"""
@@ -101,8 +127,11 @@ class Filter:
     def get_scaled_up_eyes(self, eye_info: EyeData, scale_factor = 2):
         """Scales up a given eye image using linear interpolation"""
         w, h, z = eye_info.eye_img.shape
+
         bigger_eye = cv2.resize(eye_info.eye_img, dsize=(scale_factor * w, scale_factor * h), interpolation=cv2.INTER_LINEAR)
-        return bigger_eye
+        bigger_mask = cv2.resize(eye_info.mask_current, dsize=(scale_factor * w, scale_factor * h), interpolation=cv2.INTER_LINEAR)
+
+        return bigger_eye, bigger_mask
 
 
     def drawEye(self, eye_info: EyeData):
@@ -110,23 +139,13 @@ class Filter:
         ew, eh = len(eye_info.eye_img[0]) // 2, len(eye_info.eye_img) // 2
         x, y = eye_info.ox, eye_info.oy
 
-        threshold = 0
-        mask = (eye_info.eye_img != threshold)
-
         try:
-            sub_img = self.color_img[y-eh:y+eh + 1, x-ew:x+ew + 1]
-            # make sure dimensions line up
-            if eye_info.eye_img.shape[0] < sub_img.shape[0]:
-                sub_img = sub_img[:len(sub_img) - 1, :len(sub_img) - 1]
-            
-            sub_img[mask] = eye_info.eye_img[mask]
+            sub_img = self.color_img[y-eh:y+eh, x-ew:x+ew]
+            cx, cy = int(eye_info.eye_img.shape[1]/2), int(eye_info.eye_img.shape[0]/2)
+            result = cv2.seamlessClone(eye_info.eye_img, sub_img, eye_info.mask_current, (cx, cy), cv2.NORMAL_CLONE)
 
-            # make sure dimensions line up
-            if sub_img.shape[0] < (y+eh -(y-eh)+1):
-                self.modified_img[y-eh:y+eh, x-ew:x+ew] = sub_img
-            else: 
-                self.modified_img[y-eh:y+eh + 1, x-ew:x+ew+1] = sub_img
-            
+            self.modified_img[y-eh:y+eh, x-ew:x+ew] = result
+
         except Exception as e:
             print(e)
 
@@ -159,15 +178,12 @@ class Filter:
             if len(self.eyes) % 2 != 0: continue
             for i, eye in enumerate(self.eyes):
                 if i % 2 == 1:
-                    rotated_eye = self.rotateObject(eye.eye_img, rotation)
-                    eye.eye_img = rotated_eye
-                    scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
-                    eye.eye_img = scaled_eye
+                    rotated_eye = self.rotateEye(eye, rotation)
                 else:
-                    rotated_eye = self.rotateObject(eye.eye_img, -rotation)
-                    eye.eye_img = rotated_eye
-                    scaled_eye = self.get_scaled_up_eyes(eye, scale_factor=scale)
-                    eye.eye_img = scaled_eye
+                    rotated_eye = self.rotateEye(eye, -rotation)
+
+                eye.eye_img, eye.mask_current = rotated_eye = rotated_eye
+                eye.eye_img, eye.mask_current = self.get_scaled_up_eyes(eye, scale_factor=scale)
                 self.drawEye(eye)
     
 
@@ -206,8 +222,8 @@ if __name__ == "__main__":
 
     f = Filter(image_url=images[1])
     glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
-    f.apply_glasses(glasses)
-    # f.applyEyeFilter(1, 30)
+    # f.apply_glasses(glasses)
+    f.applyEyeFilter(1, 30)
     cv2.imshow('final picture', f.modified_img)
     cv2.waitKey(0)
 
