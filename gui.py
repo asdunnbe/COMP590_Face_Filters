@@ -9,6 +9,7 @@ import os
 
 from Toggle import Toggle
 from Filter import Filter
+from remove_background import MPSegmentation
 
 class ImageAlignmentFrame(tk.Tk):
       COL1 = '#FFF4E0'
@@ -198,11 +199,21 @@ class ImageAlignmentFrame(tk.Tk):
       def openWebCam(self):
             self.getSettings()
             try:
+                  print('\n')
+                  if self.blur: 
+                        print("Loading SegmentationModule ...")
+                        segmentationModule = MPSegmentation(threshold=0.3, bg_blur_ratio=(45, 45))
+                  
+                  print("Webcame in use")
+
                   self.withdraw()
                   vid = cv2.VideoCapture(0)
                   while(True):
                         ret, frame = vid.read()
                         frame = frame[:,::-1]
+
+                        if self.blur:
+                              frame = segmentationModule(cv2.flip(frame, 1))
 
                         face_filter = Filter(use_url=False, input_image=frame)
                         face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))

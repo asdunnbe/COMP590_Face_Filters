@@ -185,6 +185,8 @@ class Filter:
                 eye.eye_img, eye.mask_current = rotated_eye = rotated_eye
                 eye.eye_img, eye.mask_current = self.get_scaled_up_eyes(eye, scale_factor=scale)
                 self.drawEye(eye)
+
+        return self.modified_img
     
 
     def apply_glasses(self, glasses):
@@ -220,7 +222,9 @@ if __name__ == "__main__":
         "test_images/what-is-people-operations-2400x2400-20201118.jpg"
     ]
 
-    f = Filter(image_url=images[1])
+    frame = cv2.imread(images[1])
+    f = Filter( use_url = False, input_image =frame)
+
     glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
     # f.apply_glasses(glasses)
     f.applyEyeFilter(1, 30)
