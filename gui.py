@@ -248,7 +248,11 @@ class ImageAlignmentFrame(tk.Tk):
                               frame = segmentationModule(cv2.flip(frame, 1))
 
                         face_filter = Filter(use_url=False, input_image=frame)
-                        face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
+                        if (self.glassesTgl.getValue()):
+                              glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
+                              face_filter.apply_glasses(glasses)
+                        else:
+                              face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
                         new_frame = face_filter.modified_img
                   
