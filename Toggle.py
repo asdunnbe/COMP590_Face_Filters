@@ -1,14 +1,19 @@
 import tkinter as tk
 
+def default():
+    pass
+
 class Toggle(tk.Frame):
     """Toggle widget which can toggle between on and off."""
     value = False
 
     def __init__(self, master, height=25, 
                  background='#ffffff', foreground='#000000',
-                 troughcolor='#ff0000', highlightbackground='#0000ff'):
+                 troughcolor='#ff0000', highlightbackground='#0000ff',
+                 command=default):
         self.background = background
         self.troughcolor = troughcolor
+        self.command = command
         tk.Frame.__init__(self, master, height=height, width=100, background=highlightbackground)
 
         self.widget = tk.Frame(self, background=background, height=height, width=50, borderwidth=3)
@@ -35,6 +40,7 @@ class Toggle(tk.Frame):
             self.front.grid(row=0, column=2)
             self.value = True
             self.back.config(text='', background=self.troughcolor, height=1)
+        self.command()
 
     def getValue(self):
         return self.value
