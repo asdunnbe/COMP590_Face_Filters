@@ -239,7 +239,7 @@ class ImageAlignmentFrame(tk.Tk):
 
                         face_filter = Filter(use_url=False, input_image=frame)
                         if (self.glassesTgl.getValue()):
-                              glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
+                              glasses = cv2.imread("assets/glasses.png")
                               face_filter.apply_glasses(glasses)
                         else:
                               face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
