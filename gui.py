@@ -144,7 +144,7 @@ class ImageAlignmentFrame(tk.Tk):
             self.eResScl.grid(row=1, column=1)
             eResMaxLbl.grid(row=1, column=2)
 
-            # place things in eyes tab)
+            # place things in eyes tab
             glassesFrm.pack(pady=10, padx=5)
             self.eRotationFrm.pack(pady=10, padx=5)
             self.eResizeFrm.pack(pady=10, padx=5)
@@ -232,7 +232,7 @@ class ImageAlignmentFrame(tk.Tk):
             self.getSettings()
             try:
                   print('\n')
-                  if self.blur: 
+                  if self.blurTgl.getValue(): 
                         print("Loading SegmentationModule ...")
                         segmentationModule = MPSegmentation(threshold=0.3, bg_blur_ratio=(45, 45))
                   
