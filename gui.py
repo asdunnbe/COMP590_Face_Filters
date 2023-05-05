@@ -1,7 +1,6 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk
-from tkinter import filedialog
 from tkinter import messagebox
 import cv2
 from datetime import datetime
@@ -40,15 +39,6 @@ class ImageAlignmentFrame(tk.Tk):
       gH = int(1.5*eS)
       glassesRaw = Image.open('assets/glasses.png')
       glassesSized = glassesRaw.resize((gW,gH))
-      
-      blur = False
-
-      iS = int(.1*imgH)
-      fileRaw = Image.open('assets/file3.png')
-      fileSized = fileRaw.resize((iS, iS))
-
-      camRaw = Image.open('assets/cam3.png')
-      camSized = camRaw.resize((iS, iS))
 
       def __init__(self):
             super(ImageAlignmentFrame, self).__init__()
@@ -232,19 +222,19 @@ class ImageAlignmentFrame(tk.Tk):
             self.getSettings()
             try:
                   print('\n')
+                  self.withdraw()
                   if self.blurTgl.getValue(): 
                         print("Loading SegmentationModule ...")
                         segmentationModule = MPSegmentation(threshold=0.3, bg_blur_ratio=(45, 45))
                   
-                  print("Webcame in use")
+                  print("Webcam in use")
 
-                  self.withdraw()
                   vid = cv2.VideoCapture(0)
                   while(True):
                         ret, frame = vid.read()
                         frame = frame[:,::-1]
 
-                        if self.blur:
+                        if self.blurTgl.getValue():
                               frame = segmentationModule(cv2.flip(frame, 1))
 
                         face_filter = Filter(use_url=False, input_image=frame)
