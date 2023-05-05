@@ -235,7 +235,7 @@ class ImageAlignmentFrame(tk.Tk):
                         frame = frame[:,::-1]
 
                         if self.blurTgl.getValue():
-                              frame = segmentationModule(cv2.flip(frame, 1))
+                              frame = segmentationModule(frame)
 
                         face_filter = Filter(use_url=False, input_image=frame)
                         if (self.glassesTgl.getValue()):
@@ -245,7 +245,7 @@ class ImageAlignmentFrame(tk.Tk):
                               face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
                         new_frame = face_filter.modified_img
-                  
+
                         # display webcam
                         cv2.imshow('press ESC to exit; SPACE to screenshot', new_frame)
 
