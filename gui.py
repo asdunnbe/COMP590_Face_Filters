@@ -1,7 +1,6 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import ttk
-from tkinter import filedialog
 from tkinter import messagebox
 import cv2
 from datetime import datetime
@@ -18,13 +17,8 @@ class ImageAlignmentFrame(tk.Tk):
       COL4 = '#4D4D4D'
       SCALE_LENGTH = 200
 
-      imgH = 300
-      imgW = 300
-      
-      fW = 2/3 * imgW # face width = 200
-      fH = 1.2*fW # face height
-      imgH = 300
-      imgW = 300
+      imgH = 350
+      imgW = 350
       
       fW = 2/3 * imgW # face width = 200
       fH = 1.2*fW # face height
@@ -40,8 +34,11 @@ class ImageAlignmentFrame(tk.Tk):
       reyeRaw = Image.open('assets/reye.png')
       reyeSized = reyeRaw.resize((eS,eS))
       reyeRotated = reyeSized
-      
-      blur = False
+
+      gW = int((imgW - fW/2)/2 + 2*eS)
+      gH = int(1.5*eS)
+      glassesRaw = Image.open('assets/glasses.png')
+      glassesSized = glassesRaw.resize((gW,gH))
 
       def __init__(self):
             super(ImageAlignmentFrame, self).__init__()
@@ -83,23 +80,37 @@ class ImageAlignmentFrame(tk.Tk):
             self.reye = self.imgCvs.create_image((self.imgW + self.fW/2)/2, (self.imgH - self.fH/6)/2,
                                     anchor='center',image=self.reyeImg)
 
+            self.glassesImg = ImageTk.PhotoImage(self.glassesSized)
+            self.glasses = self.imgCvs.create_image((self.imgW)/2, (self.imgH - self.fH/6)/2,
+                                                    anchor='center',image=self.glassesImg,state='hidden')
 
             # settings, tabs are mouth or eyes
-            settingsTabs = ttk.Notebook(self)
+            self.settingsTabs = ttk.Notebook(self, height=200, width=350)
 
             # eyes tab
-            eyesTabFrm = ttk.Frame(settingsTabs)
+            eyesTabFrm = ttk.Frame(self.settingsTabs)
+
+            # toggle sunglasses
+            glassesFrm = ttk.Frame(eyesTabFrm)
+            self.glassesTgl = Toggle(glassesFrm, height=22,
+                        background=self.COL1, foreground=self.COL3,
+                        troughcolor=self.COL3, highlightbackground=self.COL2,
+                        command=self.toggleGlasses)
+            glassesLbl = ttk.Label(glassesFrm, text='Sunglasses')
+
+            self.glassesTgl.grid(row=0, column=0)
+            glassesLbl.grid(row=0, column=1)
 
             # choose eye rotation angle
-            eRotationFrm = ttk.Frame(eyesTabFrm)
-            eRotLbl = ttk.Label(eRotationFrm, text='Rotation')
-            eRotMinLbl = ttk.Label(eRotationFrm, text='-180°', foreground=self.COL3)
-            self.eRotScl = tk.Scale(eRotationFrm, orient='horizontal',
+            self.eRotationFrm = ttk.Frame(eyesTabFrm)
+            eRotLbl = ttk.Label(self.eRotationFrm, text='Rotation')
+            eRotMinLbl = ttk.Label(self.eRotationFrm, text='-180°', foreground=self.COL3)
+            self.eRotScl = tk.Scale(self.eRotationFrm, orient='horizontal',
                               background=self.COL1,
                               highlightbackground=self.COL2, troughcolor=self.COL3,
                               length=self.SCALE_LENGTH, from_=-180, to=180, showvalue=0,
                               resolution=5, command=self.eyeRotate)
-            eRotMaxLbl = ttk.Label(eRotationFrm, text='180°', foreground=self.COL3)
+            eRotMaxLbl = ttk.Label(self.eRotationFrm, text='180°', foreground=self.COL3)
 
             eRotLbl.grid(row=0, column=1, sticky='W')
             eRotMinLbl.grid(row=1, column=0)
@@ -107,16 +118,16 @@ class ImageAlignmentFrame(tk.Tk):
             eRotMaxLbl.grid(row=1, column=2)
 
             # choose eye resize
-            eResizeFrm = ttk.Frame(eyesTabFrm)
-            eResLbl = ttk.Label(eResizeFrm, text='Resize')
-            eResMinLbl = ttk.Label(eResizeFrm, text='100%', foreground=self.COL3)
-            self.eResScl = tk.Scale(eResizeFrm, orient='horizontal',
+            self.eResizeFrm = ttk.Frame(eyesTabFrm)
+            eResLbl = ttk.Label(self.eResizeFrm, text='Resize')
+            eResMinLbl = ttk.Label(self.eResizeFrm, text='100%', foreground=self.COL3)
+            self.eResScl = tk.Scale(self.eResizeFrm, orient='horizontal',
                               background=self.COL1,
                               highlightbackground=self.COL2, troughcolor=self.COL3,
                               length=self.SCALE_LENGTH, from_=1, to=2, showvalue=0,
                               resolution=1, command=self.eyeResize)
 
-            eResMaxLbl = ttk.Label(eResizeFrm, text='200%', foreground=self.COL3)
+            eResMaxLbl = ttk.Label(self.eResizeFrm, text='200%', foreground=self.COL3)
 
             eResLbl.grid(row=0, column=1, sticky='W')
             eResMinLbl.grid(row=1, column=0)
@@ -124,12 +135,13 @@ class ImageAlignmentFrame(tk.Tk):
             eResMaxLbl.grid(row=1, column=2)
 
             # place things in eyes tab
-            eRotationFrm.pack(pady=10, padx=5)
-            eResizeFrm.pack(pady=10, padx=5)
-            settingsTabs.add(eyesTabFrm, text='eyes')
+            glassesFrm.pack(pady=10, padx=5)
+            self.eRotationFrm.pack(pady=10, padx=5)
+            self.eResizeFrm.pack(pady=10, padx=5)
+            self.settingsTabs.add(eyesTabFrm, text='eyes')
 
             # other tab
-            otherTabFrm = ttk.Frame(settingsTabs)
+            otherTabFrm = ttk.Frame(self.settingsTabs)
 
             # blur background toggle
             blurFrm = ttk.Frame(otherTabFrm)
@@ -143,8 +155,7 @@ class ImageAlignmentFrame(tk.Tk):
 
             # place things in other tab
             blurFrm.pack(pady=10, padx=5)
-            settingsTabs.add(otherTabFrm, text='other')
-
+            self.settingsTabs.add(otherTabFrm, text='other')
 
             # submit button
             submitBtn = tk.Label(self, text='submit', 
@@ -155,12 +166,31 @@ class ImageAlignmentFrame(tk.Tk):
             # grid
             self.imgCvs.grid(row=0, column=1, rowspan=5, 
                         sticky='NW', padx=10, pady=10)
-            settingsTabs.grid(row=0, column=2, columnspan=3, 
+            self.settingsTabs.grid(row=0, column=2, columnspan=3, 
                         sticky='N', padx=10, pady=10)
-            # iconsFrm.grid(row=1, column=2,
-            #             sticky='NW', padx=10)
             submitBtn.grid(row=4, column=3,
                         sticky='S', padx=3, pady=10)
+
+      def toggleGlasses(self):
+            value = self.glassesTgl.getValue()
+            if (value):
+                  # hide rotate and resize frame
+                  self.eRotationFrm.pack_forget()
+                  self.eResizeFrm.pack_forget()
+                  self.settingsTabs.configure(height=100)
+                  # show sunglasses on the cartoon face
+                  self.imgCvs.itemconfig(self.glasses, state='normal')
+                  self.imgCvs.itemconfig(self.leye, state='hidden')
+                  self.imgCvs.itemconfig(self.reye, state='hidden')
+            else:
+                  # show rotate and resize frame
+                  self.eRotationFrm.pack(pady=10, padx=5)
+                  self.eResizeFrm.pack(pady=10, padx=5)
+                  self.settingsTabs.configure(height=200)
+                  # hide sunglasses on the cartoon face
+                  self.imgCvs.itemconfig(self.glasses, state='hidden')
+                  self.imgCvs.itemconfig(self.leye, state='normal')
+                  self.imgCvs.itemconfig(self.reye, state='normal')
 
       def eyeRotate(self, val):
             angle = int(val)
@@ -187,39 +217,35 @@ class ImageAlignmentFrame(tk.Tk):
             self.imgCvs.itemconfig(self.reye, image=self.reyeImg)
             # print(f'{eS} * {val} = {nEyeSize}')
 
-      def toggleBlur(self):
-            print(f'toggle clicked {self.blur}')
-            if (self.blur):
-                  self.blurTgl.set(1)
-                  self.blur = False
-            else:
-                  self.blurTgl.set(2)
-                  self.blur = True
 
       def openWebCam(self):
             self.getSettings()
             try:
                   print('\n')
-                  if self.blur: 
+                  self.withdraw()
+                  if self.blurTgl.getValue(): 
                         print("Loading SegmentationModule ...")
                         segmentationModule = MPSegmentation(threshold=0.3, bg_blur_ratio=(45, 45))
                   
-                  print("Webcame in use")
+                  print("Webcam in use")
 
-                  self.withdraw()
                   vid = cv2.VideoCapture(0)
                   while(True):
                         ret, frame = vid.read()
                         frame = frame[:,::-1]
 
-                        if self.blur:
-                              frame = segmentationModule(cv2.flip(frame, 1))
+                        if self.blurTgl.getValue():
+                              frame = segmentationModule(frame)
 
                         face_filter = Filter(use_url=False, input_image=frame)
-                        face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
+                        if (self.glassesTgl.getValue()):
+                              glasses = cv2.imread("sunglasses/—Pngtree—brown tung  reflection sunglasses_5336208.png")
+                              face_filter.apply_glasses(glasses)
+                        else:
+                              face_filter.applyEyeFilter(int(self.eResScl.get()), int(self.eRotScl.get()))
 
                         new_frame = face_filter.modified_img
-                  
+
                         # display webcam
                         cv2.imshow('press ESC to exit; SPACE to screenshot', new_frame)
 
@@ -247,12 +273,12 @@ class ImageAlignmentFrame(tk.Tk):
       # submit Button
       def getSettings(self):
             try:
+                  print(f'blur background: ', self.blurTgl.getValue())
+                  print(f'sunglasses: ', self.glassesTgl.getValue())
                   print(f'eye rotation: ', self.eRotScl.get())
                   print(f'eye resize: ', self.eResScl.get())
-                  print(f'blur background: ', self.blur)
-            finally:
+            except:
                   print('button clicked')
-
 
 if __name__ == '__main__':
       app = ImageAlignmentFrame()
